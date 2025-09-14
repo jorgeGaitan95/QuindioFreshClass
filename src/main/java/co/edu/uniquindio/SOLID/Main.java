@@ -24,10 +24,10 @@ public class Main {
 
         catalogo.mostrarCatalogo();
 
-        // 2️⃣ Crear cliente
+
         Cliente cliente = new Cliente("109314240", "Julian", "julian2@gmail.com", "3104567890");
 
-        // 3️⃣ Crear lista de items para el pedido usando buscarProducto()
+
         List<ItemPedido> items = new ArrayList<>();
 
         Producto p1 = catalogo.buscarProducto("SKU-01");
@@ -39,7 +39,7 @@ public class Main {
         Producto p3 = catalogo.buscarProducto("SKU-03");
         if (p3 != null) items.add(new ItemPedido(p3, 3));
 
-        // 4️⃣ Crear pedido usando el Builder
+
         Pedidos pedido = new PedidoBuilder()
                 .codigo("PED-001")
                 .Cliente(cliente)
@@ -51,16 +51,16 @@ public class Main {
         System.out.println("Pedido creado con éxito:");
         System.out.println(pedido);
 
-        // 5️⃣ Calcular envío
-        Envio envio = new EnvioExpress(); // o new EnvioEstandar();
+
+        Envio envio = new EnvioExpress();
         double total = pedido.calcularTotal(envio);
         System.out.println("Total del pedido $ " + total);
 
-        // 6️⃣ Procesar pago
-        MetodoPago pago = PagoFactory.crearPago("TARJETA");   // devuelve un Pago (o MetodoPago según tu nombre)
+
+        MetodoPago pago = PagoFactory.crearPago("TARJETA");
         pago.procesarPago(total);
 
-// Notificación (factory estático)
+
         Notificacion notificacion = NotificacionFactory.crearNotificacion("EMAIL");
         notificacion.enviar("Su pedido " + pedido.getCodigo() + " ha sido procesado exitosamente.");
         }

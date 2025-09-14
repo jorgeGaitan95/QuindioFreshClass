@@ -17,11 +17,15 @@ public class Pedidos {
     private String notas;
     private String codigoDescuento;
 
-    public Pedidos(String codigo, LocalDateTime fechaCreacion, Cliente cliente, List<ItemPedido> items, String direccionEnvio, String notas, String codigoDescuento) {
+    public Pedidos(String codigo, LocalDateTime fechaCreacion, Cliente cliente,
+                   List<ItemPedido> items, String direccionEnvio, String notas, String codigoDescuento) {
         this.codigo = codigo;
         this.fechaCreacion = fechaCreacion;
         this.cliente = cliente;
-        this.items = new ArrayList<>();
+        this.items = (items != null) ? items : new ArrayList<>();
+        this.direccionEnvio = direccionEnvio;
+        this.notas = notas;
+        this.codigoDescuento = codigoDescuento;
     }
 
     public static PedidoBuilder builder() { return new PedidoBuilder(); }
