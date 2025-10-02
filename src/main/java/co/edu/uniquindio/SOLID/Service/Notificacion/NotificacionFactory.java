@@ -1,8 +1,4 @@
-package co.edu.uniquindio.SOLID.PatronesCreacionales;
-
-import co.edu.uniquindio.SOLID.Service.Notificacion;
-import co.edu.uniquindio.SOLID.model.NotificacionEmail;
-import co.edu.uniquindio.SOLID.model.NotificacionSms;
+package co.edu.uniquindio.SOLID.Service.Notificacion;
 
 public class NotificacionFactory {
     public static Notificacion crearNotificacion(String tipo) {

@@ -1,14 +1,12 @@
-package co.edu.uniquindio.SOLID.PatronesCreacionales;
-
-import co.edu.uniquindio.SOLID.Service.MetodoPago;
+package co.edu.uniquindio.SOLID.Service.Pago;
 
 public class PagoFactory {
     public static MetodoPago crearPago(String tipo) {
         switch (tipo.toLowerCase()) {
             case "tarjeta":
-                return new co.edu.uniquindio.SOLID.model.PagoTarjetaCredito();
+                return new PagoTarjetaCredito();
             case "pse":
-                return new co.edu.uniquindio.SOLID.model.PagoPSE();
+                return new PagoPSE();
 
             default:
                 throw new IllegalArgumentException("Tipo de pago no soportado: " + tipo);

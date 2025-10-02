@@ -1,6 +1,4 @@
-package co.edu.uniquindio.SOLID.model;
-
-import co.edu.uniquindio.SOLID.Service.MetodoPago;
+package co.edu.uniquindio.SOLID.Service.Pago;
 
 public class PagoPSE implements MetodoPago {
     @Override

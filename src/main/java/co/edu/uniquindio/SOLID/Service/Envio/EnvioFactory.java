@@ -1,8 +1,4 @@
-package co.edu.uniquindio.SOLID.PatronesCreacionales;
-
-import co.edu.uniquindio.SOLID.Service.Envio;
-import co.edu.uniquindio.SOLID.model.EnvioEstandar;
-import co.edu.uniquindio.SOLID.model.EnvioExpress;
+package co.edu.uniquindio.SOLID.Service.Envio;
 
 public class EnvioFactory {
     public static Envio crearEnvio(String tipoEnvio) {

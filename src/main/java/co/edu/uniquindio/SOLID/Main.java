@@ -1,29 +1,21 @@
 package co.edu.uniquindio.SOLID;
 
-import co.edu.uniquindio.SOLID.PatronesCreacionales.EnvioFactory;
-import co.edu.uniquindio.SOLID.PatronesCreacionales.NotificacionFactory;
-import co.edu.uniquindio.SOLID.PatronesCreacionales.PagoFactory;
-import co.edu.uniquindio.SOLID.PatronesCreacionales.PedidoBuilder;
-import co.edu.uniquindio.SOLID.Service.Envio;
-import co.edu.uniquindio.SOLID.Service.MetodoPago;
-import co.edu.uniquindio.SOLID.Service.Notificacion;
-import co.edu.uniquindio.SOLID.model.*;
-import jdk.swing.interop.SwingInterOpUtils;
+import co.edu.uniquindio.SOLID.Service.Notificacion.NotificacionFactory;
+import co.edu.uniquindio.SOLID.Service.Pago.PagoFactory;
+import co.edu.uniquindio.SOLID.Model.PedidoBuilder;
+import co.edu.uniquindio.SOLID.Model.*;
+import co.edu.uniquindio.SOLID.Service.Envio.Envio;
+import co.edu.uniquindio.SOLID.Service.Envio.EnvioExpress;
+import co.edu.uniquindio.SOLID.Service.Notificacion.Notificacion;
+import co.edu.uniquindio.SOLID.Service.Pago.MetodoPago;
+import co.edu.uniquindio.SOLID.utils.AppSetup;
 
 import java.util.ArrayList;
 import java.util.List;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        CatalogoProductos catalogo = CatalogoProductos.getInstancia();
-        catalogo.agregarProducto(new Producto("SKU-01", "Café Quindío", 25000));
-        catalogo.agregarProducto(new Producto("SKU-02", "Banano", 5000));
-        catalogo.agregarProducto(new Producto("SKU-03", "Aguacate", 8000));
-
-        catalogo.mostrarCatalogo();
-
+        AppSetup app = new AppSetup();
 
         Cliente cliente = new Cliente("109314240", "Julian", "julian2@gmail.com", "3104567890");
 
@@ -40,10 +32,10 @@ public class Main {
         if (p3 != null) items.add(new ItemPedido(p3, 3));
 
 
-        Pedidos pedido = new PedidoBuilder()
-                .codigo("PED-001")
-                .Cliente(cliente)
-                .items(items)
+        Pedido pedido = new PedidoBuilder()
+                .withCodigo("PED-001")
+                .withCliente(cliente)
+                .withItems(items)
                 .direccionEnvio("Cra 12 #34-56")
                 .notas("Entregar en horario laboral")
                 .build();
@@ -65,3 +57,9 @@ public class Main {
         notificacion.enviar("Su pedido " + pedido.getCodigo() + " ha sido procesado exitosamente.");
         }
     }
+
+
+         if (producto == null)
+        throw new IllegalArgumentException("El producto no puede ser nulo");
+        if (cantidad <= 0)
+        throw new IllegalArgumentException("La cantidad debe ser mayor que cero");
