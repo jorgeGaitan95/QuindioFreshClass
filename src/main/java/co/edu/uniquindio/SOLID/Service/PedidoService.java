@@ -1,30 +1,66 @@
 package co.edu.uniquindio.SOLID.Service;
 
-import co.edu.uniquindio.SOLID.Model.ItemPedido;
-import co.edu.uniquindio.SOLID.Model.Pedido;
-import co.edu.uniquindio.SOLID.Model.Producto;
+import co.edu.uniquindio.SOLID.Model.*;
+import co.edu.uniquindio.SOLID.Model.DTO.ItemPedidoDTO;
+import co.edu.uniquindio.SOLID.Model.DTO.PedidoDTO;
 import co.edu.uniquindio.SOLID.Service.Envio.Envio;
+import co.edu.uniquindio.SOLID.Service.Envio.EnvioExpress;
+import co.edu.uniquindio.SOLID.Service.Notificacion.Notificacion;
+import co.edu.uniquindio.SOLID.Service.Notificacion.NotificacionFactory;
+import co.edu.uniquindio.SOLID.Service.Pago.MetodoPago;
+import co.edu.uniquindio.SOLID.Service.Pago.PagoFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PedidoService {
     CatalogoProductosService catalogoProductosService;
+    ClienteService clienteService;
 
     public PedidoService(CatalogoProductosService catalogoProductosService) {
         this.catalogoProductosService = catalogoProductosService;
+        this.clienteService = new ClienteService();
     }
 
-    public boolean addItemPedido(String idPedido, String sku, int cantidad) {
+    public Pedido crearPedido(PedidoDTO pedidoDTO) {
 
-        try{
-            if(opcion ==6)
+        List<ItemPedido> items = new ArrayList<ItemPedido>();
 
+        for (ItemPedidoDTO  item : pedidoDTO.itemsPedido) {
+            Producto producto = catalogoProductosService.buscarProducto(item.codigo);
+            if (producto != null) {
+                ItemPedido itemPedido = new ItemPedido(producto, item.cantidad);
+                items.add(itemPedido);
+            }
         }
-        Pedido pedido =
-        Producto p1 = catalogoProductosService.buscarProducto(sku);
-        if (p1 == null)
-            return false;
 
-        ItemPedido item = new ItemPedido(p1, cantidad);
+        Cliente cliente = clienteService.buscarCliente(pedidoDTO.idCliente);
 
+        PedidoBuilder pedidoBuilder = new PedidoBuilder(pedidoDTO.codigo,cliente,items, pedidoDTO.direccionEnvio);
+
+        if (pedidoDTO.notas != null || !pedidoDTO.notas.isEmpty()){
+            pedidoBuilder.withNotas(pedidoDTO.notas);
+        }
+
+        if (pedidoDTO.codigoDescuento !=null || !pedidoDTO.codigoDescuento.isEmpty()){
+            pedidoBuilder.withCodigoDescuento(pedidoDTO.codigoDescuento);
+        }
+
+        Pedido pedido = pedidoBuilder.build();
+
+        Envio envio = new EnvioExpress();
+        double total = calcularTotal(pedido, envio);
+        System.out.println("Total del pedido $ " + total);
+
+
+        MetodoPago pago = PagoFactory.crearPago("TARJETA");
+        pago.procesarPago(total);
+
+
+        Notificacion notificacion = NotificacionFactory.crearNotificacion("EMAIL");
+        notificacion.enviar("Su pedido " + pedido.getCodigo() + " ha sido procesado exitosamente.");
+
+        return pedido;
     }
 
     public double calcularSubtotal(Pedido pedido) {
@@ -37,7 +73,7 @@ public class PedidoService {
         return subtotal;
     }
 
-//    public double calcularTotal(Envio envio) {
-//        return calcularSubtotal() + envio.calcularCostoEnvio();
-//    }
+  public double calcularTotal(Pedido pedido, Envio envio) {
+        return calcularSubtotal(pedido) + envio.calcularCostoEnvio();
+    }
 }
