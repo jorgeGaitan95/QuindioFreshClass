@@ -52,7 +52,6 @@ public class PedidoService {
         double total = calcularTotal(pedido, envio);
         System.out.println("Total del pedido $ " + total);
 
-
         MetodoPago pago = PagoFactory.crearPago("TARJETA");
         pago.procesarPago(total);
 
