@@ -1,7 +1,7 @@
 package co.edu.uniquindio.SOLID.utils.Mappers;
 
-import co.edu.uniquindio.SOLID.model.Cliente;
-import co.edu.uniquindio.SOLID.model.DTO.ClienteDTO;
+import co.edu.uniquindio.SOLID.Model.Cliente;
+import co.edu.uniquindio.SOLID.Model.DTO.ClienteDTO;
 
 public class ClienteMapper {
     

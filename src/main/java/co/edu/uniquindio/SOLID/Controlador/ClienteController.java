@@ -1,6 +1,6 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
-import co.edu.uniquindio.SOLID.model.DTO.ClienteDTO;
+import co.edu.uniquindio.SOLID.Model.DTO.ClienteDTO;
 import co.edu.uniquindio.SOLID.Service.Fachadas.MinimercadoFacade;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

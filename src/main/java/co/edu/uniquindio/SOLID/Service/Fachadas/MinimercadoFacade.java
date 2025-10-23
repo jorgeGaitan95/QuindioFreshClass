@@ -1,10 +1,10 @@
 package co.edu.uniquindio.SOLID.Service.Fachadas;
 
-import co.edu.uniquindio.SOLID.model.DTO.ClienteDTO;
-import co.edu.uniquindio.SOLID.model.DTO.ProductoDTO;
-import co.edu.uniquindio.SOLID.model.DTO.PedidoDTO;
-import co.edu.uniquindio.SOLID.model.DTO.ItemPedidoDTO;
-import co.edu.uniquindio.SOLID.model.DTO.ResumenPedidoDTO;
+import co.edu.uniquindio.SOLID.Model.DTO.ClienteDTO;
+import co.edu.uniquindio.SOLID.Model.DTO.ProductoDTO;
+import co.edu.uniquindio.SOLID.Model.DTO.PedidoDTO;
+import co.edu.uniquindio.SOLID.Model.DTO.ItemPedidoDTO;
+import co.edu.uniquindio.SOLID.Model.DTO.ResumenPedidoDTO;
 import co.edu.uniquindio.SOLID.Service.ClienteService;
 import co.edu.uniquindio.SOLID.Service.ProductoService;
 import co.edu.uniquindio.SOLID.Service.PedidoService;
@@ -13,7 +13,7 @@ import co.edu.uniquindio.SOLID.Service.CatalogoProductosService;
 import java.util.List;
 
 /**
- * Facade simple que solo actúa como punto de entrada
+ * Facade que actúa como punto de entrada
  * Delega toda la lógica a los servicios correspondientes
  */
 public class MinimercadoFacade {

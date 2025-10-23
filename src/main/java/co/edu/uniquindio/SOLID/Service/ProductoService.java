@@ -1,8 +1,8 @@
 package co.edu.uniquindio.SOLID.Service;
 
-import co.edu.uniquindio.SOLID.model.Producto;
-import co.edu.uniquindio.SOLID.model.DTO.ProductoDTO;
-import co.edu.uniquindio.SOLID.model.Minimercado;
+import co.edu.uniquindio.SOLID.Model.Producto;
+import co.edu.uniquindio.SOLID.Model.DTO.ProductoDTO;
+import co.edu.uniquindio.SOLID.Model.Minimercado;
 import co.edu.uniquindio.SOLID.utils.Mappers.ProductoMapper;
 
 import java.util.ArrayList;

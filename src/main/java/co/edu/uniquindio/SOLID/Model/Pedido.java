@@ -1,4 +1,4 @@
-package co.edu.uniquindio.SOLID.model;
+package co.edu.uniquindio.SOLID.Model;
 
 
 import co.edu.uniquindio.SOLID.Service.Envio.Envio;

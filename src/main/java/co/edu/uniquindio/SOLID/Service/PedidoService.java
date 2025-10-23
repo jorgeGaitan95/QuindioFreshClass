@@ -1,9 +1,9 @@
 package co.edu.uniquindio.SOLID.Service;
 
-import co.edu.uniquindio.SOLID.model.*;
-import co.edu.uniquindio.SOLID.model.DTO.ItemPedidoDTO;
-import co.edu.uniquindio.SOLID.model.DTO.PedidoDTO;
-import co.edu.uniquindio.SOLID.model.DTO.ResumenPedidoDTO;
+import co.edu.uniquindio.SOLID.Model.*;
+import co.edu.uniquindio.SOLID.Model.DTO.ItemPedidoDTO;
+import co.edu.uniquindio.SOLID.Model.DTO.PedidoDTO;
+import co.edu.uniquindio.SOLID.Model.DTO.ResumenPedidoDTO;
 import co.edu.uniquindio.SOLID.Service.Envio.Envio;
 import co.edu.uniquindio.SOLID.Service.Envio.EnvioExpress;
 import co.edu.uniquindio.SOLID.Service.Notificacion.Notificacion;

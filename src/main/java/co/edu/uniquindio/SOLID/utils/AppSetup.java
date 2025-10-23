@@ -1,8 +1,8 @@
 package co.edu.uniquindio.SOLID.utils;
 
-import co.edu.uniquindio.SOLID.model.Cliente;
-import co.edu.uniquindio.SOLID.model.Minimercado;
-import co.edu.uniquindio.SOLID.model.Producto;
+import co.edu.uniquindio.SOLID.Model.Cliente;
+import co.edu.uniquindio.SOLID.Model.Minimercado;
+import co.edu.uniquindio.SOLID.Model.Producto;
 
 public class AppSetup {
 

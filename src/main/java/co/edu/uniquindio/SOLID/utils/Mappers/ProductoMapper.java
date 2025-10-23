@@ -1,7 +1,7 @@
 package co.edu.uniquindio.SOLID.utils.Mappers;
 
-import co.edu.uniquindio.SOLID.model.Producto;
-import co.edu.uniquindio.SOLID.model.DTO.ProductoDTO;
+import co.edu.uniquindio.SOLID.Model.Producto;
+import co.edu.uniquindio.SOLID.Model.DTO.ProductoDTO;
 
 public class ProductoMapper {
     

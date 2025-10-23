@@ -1,7 +1,5 @@
 package co.edu.uniquindio.SOLID;
 
-import co.edu.uniquindio.SOLID.model.DTO.ItemPedidoDTO;
-import co.edu.uniquindio.SOLID.model.DTO.PedidoDTO;
 import co.edu.uniquindio.SOLID.utils.AppSetup;
 import co.edu.uniquindio.SOLID.utils.JFXPaths;
 import javafx.application.Application;

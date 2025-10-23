@@ -1,4 +1,4 @@
-package co.edu.uniquindio.SOLID.model.DTO;
+package co.edu.uniquindio.SOLID.Model.DTO;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
