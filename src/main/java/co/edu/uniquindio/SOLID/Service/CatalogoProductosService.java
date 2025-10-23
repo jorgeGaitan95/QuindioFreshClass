@@ -21,8 +21,5 @@ public class CatalogoProductosService {
 
     public void mostrarCatalogo() {
         System.out.println("Catálogo de Productos:");
-        for (Producto producto : CatalogoProductos.getInstancia().getProductos()) {
-            System.out.println(producto);
-        }
     }
 }
