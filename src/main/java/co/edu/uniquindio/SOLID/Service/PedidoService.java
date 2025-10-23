@@ -26,7 +26,7 @@ public class PedidoService {
 
         List<ItemPedido> items = new ArrayList<ItemPedido>();
 
-        for (ItemPedidoDTO  item : pedidoDTO.itemsPedido) {
+        for (ItemPedidoDTO item : pedidoDTO.itemsPedido) {
             Producto producto = catalogoProductosService.buscarProducto(item.skuProducto);
             if (producto != null) {
                 ItemPedido itemPedido = new ItemPedido(producto, item.cantidad);
