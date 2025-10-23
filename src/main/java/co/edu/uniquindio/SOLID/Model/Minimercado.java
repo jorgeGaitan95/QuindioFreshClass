@@ -31,7 +31,6 @@ public class Minimercado {
         pedidos.add(pedido);
     }
 
-
     public void addCliente(Cliente cliente) {
         clientes.add(cliente);
     }

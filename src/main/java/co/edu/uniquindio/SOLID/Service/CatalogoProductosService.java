@@ -4,11 +4,6 @@ import co.edu.uniquindio.SOLID.model.Minimercado;
 import co.edu.uniquindio.SOLID.model.Producto;
 
 public class CatalogoProductosService {
-    
-    public void agregarProducto(Producto producto) {
-
-        Minimercado.getInstancia().addProducto(producto);
-    }
 
     public Producto buscarProducto(String sku) {
         for (Producto producto : Minimercado.getInstancia().getProductos()) {
@@ -17,9 +12,5 @@ public class CatalogoProductosService {
             }
         }
         return null;
-    }
-
-    public void mostrarCatalogo() {
-        System.out.println("Catálogo de Productos:");
     }
 }

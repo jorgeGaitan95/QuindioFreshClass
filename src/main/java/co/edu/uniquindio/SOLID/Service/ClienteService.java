@@ -5,8 +5,8 @@ import co.edu.uniquindio.SOLID.model.DTO.ClienteDTO;
 import co.edu.uniquindio.SOLID.model.Minimercado;
 import co.edu.uniquindio.SOLID.utils.Mappers.ClienteMapper;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ClienteService {
     
@@ -15,14 +15,16 @@ public class ClienteService {
     public ClienteService() {
         this.minimercado = Minimercado.getInstancia();
     }
-    
+
     /**
      * Obtiene todos los clientes como DTOs
      */
     public List<ClienteDTO> obtenerTodosLosClientes() {
-        return minimercado.getClientes().stream()
-                .map(ClienteMapper::toDTO)
-                .collect(Collectors.toList());
+        List<ClienteDTO> clientesDTO = new ArrayList<>();
+        for (Cliente cliente : minimercado.getClientes()) {
+            clientesDTO.add(ClienteMapper.toDTO(cliente));
+        }
+        return clientesDTO;
     }
     
     /**
@@ -85,9 +87,11 @@ public class ClienteService {
      * Busca un cliente entity por cédula (para uso interno de servicios)
      */
     public Cliente buscarClienteEntity(String cedula) {
-        return minimercado.getClientes().stream()
-                .filter(c -> c.getCedula().equals(cedula))
-                .findFirst()
-                .orElse(null);
+        for (Cliente cliente : minimercado.getClientes()) {
+            if (cliente.getCedula().equals(cedula)) {
+                return cliente;
+            }
+        }
+        return null;
     }
 }

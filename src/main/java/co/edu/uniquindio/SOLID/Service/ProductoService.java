@@ -5,8 +5,8 @@ import co.edu.uniquindio.SOLID.model.DTO.ProductoDTO;
 import co.edu.uniquindio.SOLID.model.Minimercado;
 import co.edu.uniquindio.SOLID.utils.Mappers.ProductoMapper;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ProductoService {
     
@@ -20,9 +20,11 @@ public class ProductoService {
      * Obtiene todos los productos como DTOs
      */
     public List<ProductoDTO> obtenerTodosLosProductos() {
-        return minimercado.getProductos().stream()
-                .map(ProductoMapper::toDTO)
-                .collect(Collectors.toList());
+        List<ProductoDTO> productosDTO = new ArrayList<>();
+        for (Producto producto : minimercado.getProductos()) {
+            productosDTO.add(ProductoMapper.toDTO(producto));
+        }
+        return productosDTO;
     }
     
     /**
@@ -82,13 +84,14 @@ public class ProductoService {
     }
     
     /**
-     * Método privado para buscar la entidad
+     * Busca un producto entity por SKU (para uso interno de servicios)
      */
-    private Producto buscarProductoEntity(String sku) {
-        return minimercado.getProductos().stream()
-                .filter(p -> p.getSku().equals(sku))
-                .findFirst()
-                .orElse(null);
+    public Producto buscarProductoEntity(String sku) {
+        for (Producto producto : minimercado.getProductos()) {
+            if (producto.getSku().equals(sku)) {
+                return producto;
+            }
+        }
+        return null;
     }
 }
-

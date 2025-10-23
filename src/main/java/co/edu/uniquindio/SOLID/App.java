@@ -31,20 +31,5 @@ public class App extends Application {
         stage.setTitle("Sistema Quindío Fresh - Gestión de Pedidos");
         stage.setScene(scene);
         stage.show();
-//        AppSetup app = new AppSetup();
-//        PedidoFacade pedidoFacade = new PedidoFacade();
-//
-//        List<ItemPedidoDTO> ProductosPedido = new ArrayList<>();
-//        ProductosPedido.add(new ItemPedidoDTO("SKU-01",1));
-//        ProductosPedido.add(new ItemPedidoDTO("SKU-02",2));
-//        ProductosPedido.add(new ItemPedidoDTO("SKU-03",4));
-//
-//        PedidoDTO pedidoDTO = new PedidoDTO();
-//        pedidoDTO.codigo = "OO1";
-//        pedidoDTO.idCliente = "1093";
-//        pedidoDTO.itemsPedido = ProductosPedido;
-//        pedidoDTO.direccionEnvio = "Cra 5c - 27";
-//
-//        pedidoFacade.crearPedido(pedidoDTO);
     }
 }
