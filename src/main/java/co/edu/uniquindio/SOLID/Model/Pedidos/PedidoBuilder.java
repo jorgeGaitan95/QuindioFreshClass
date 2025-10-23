@@ -1,4 +1,4 @@
-package co.edu.uniquindio.SOLID.Model.Pedido;
+package co.edu.uniquindio.SOLID.Model.Pedidos;
 
 import co.edu.uniquindio.SOLID.Model.Cliente;
 
@@ -8,13 +8,13 @@ import java.util.List;
 
 public  class PedidoBuilder {
 
-    String codigo;
-    LocalDateTime fechaCreacion = LocalDateTime.now();
-    Cliente cliente;
-    List<ItemPedido> items = new ArrayList<>();
-    String direccionEnvio;
-    String notas;
-    String codigoDescuento;
+    public String codigo;
+    public LocalDateTime fechaCreacion = LocalDateTime.now();
+    public Cliente cliente;
+    public List<ItemPedido> items = new ArrayList<>();
+    public String direccionEnvio;
+    public String notas;
+    public String codigoDescuento;
 
     public PedidoBuilder (String codigo, Cliente cliente, List<ItemPedido> items, String direccionEnvio) {
         this.codigo = codigo;

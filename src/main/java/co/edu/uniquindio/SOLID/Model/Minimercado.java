@@ -3,11 +3,10 @@ package co.edu.uniquindio.SOLID.Model;
 import co.edu.uniquindio.SOLID.Model.Pago.MetodoPago;
 import co.edu.uniquindio.SOLID.Model.Pago.PagoFactory;
 import co.edu.uniquindio.SOLID.Model.Envio.*;
-import co.edu.uniquindio.SOLID.Model.Pago.*;
 import co.edu.uniquindio.SOLID.Model.Notificacion.*;
-import co.edu.uniquindio.SOLID.Model.Pedido.ItemPedido;
-import co.edu.uniquindio.SOLID.Model.Pedido.Pedido;
-import co.edu.uniquindio.SOLID.Model.Pedido.PedidoBuilder;
+import co.edu.uniquindio.SOLID.Model.Pedidos.ItemPedido;
+import co.edu.uniquindio.SOLID.Model.Pedidos.Pedido;
+import co.edu.uniquindio.SOLID.Model.Pedidos.PedidoBuilder;
 
 import java.util.ArrayList;
 import java.util.List;

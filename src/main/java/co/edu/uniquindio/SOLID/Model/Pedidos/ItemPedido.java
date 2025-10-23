@@ -1,4 +1,4 @@
-package co.edu.uniquindio.SOLID.Model.Pedido;
+package co.edu.uniquindio.SOLID.Model.Pedidos;
 
 import co.edu.uniquindio.SOLID.Model.Producto;
 

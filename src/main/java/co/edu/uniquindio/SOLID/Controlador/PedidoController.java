@@ -1,8 +1,8 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
 import co.edu.uniquindio.SOLID.Model.*;
-import co.edu.uniquindio.SOLID.Model.Pedido.ItemPedido;
-import co.edu.uniquindio.SOLID.Model.Pedido.Pedido;
+import co.edu.uniquindio.SOLID.Model.Pedidos.ItemPedido;
+import co.edu.uniquindio.SOLID.Model.Pedidos.Pedido;
 import co.edu.uniquindio.SOLID.utils.JFXPaths;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

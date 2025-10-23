@@ -1,8 +1,7 @@
-package co.edu.uniquindio.SOLID.Model.Pedido;
-
-import co.edu.uniquindio.SOLID.Model.Cliente;
+package co.edu.uniquindio.SOLID.Model;
 
 import java.time.LocalDateTime;
+import co.edu.uniquindio.SOLID.Model.Pedidos.*;
 import java.util.List;
 
 /**
@@ -33,6 +32,11 @@ public class Pedido {
         this.tipoNotificacion = "EMAIL"; // Por defecto
     }
 
+    // ========== LÓGICA DE NEGOCIO ==========
+    
+    /**
+     * Calcula el subtotal de todos los items del pedido
+     */
     public double calcularSubtotal() {
         double subtotal = 0;
         for (ItemPedido item : items) {
@@ -41,6 +45,9 @@ public class Pedido {
         return subtotal;
     }
 
+    /**
+     * Calcula el costo de envío según el tipo
+     */
     public double calcularCostoEnvio() {
         if (tipoEnvio != null && tipoEnvio.equals("EXPRESS")) {
             return 15000;
@@ -49,11 +56,15 @@ public class Pedido {
         }
     }
 
-
+    /**
+     * Calcula el total del pedido (subtotal + envío)
+     */
     public double calcularTotal() {
         return calcularSubtotal() + calcularCostoEnvio();
     }
 
+    // ========== GETTERS Y SETTERS ==========
+    
     public String getCodigo() { return codigo; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public Cliente getCliente() { return cliente; }
