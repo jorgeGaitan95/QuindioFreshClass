@@ -34,7 +34,7 @@ public class PedidoService {
             }
         }
 
-        Cliente cliente = clienteService.buscarCliente(pedidoDTO.idCliente);
+        Cliente cliente = clienteService.buscarClienteEntity(pedidoDTO.idCliente);
 
         PedidoBuilder pedidoBuilder = new PedidoBuilder(pedidoDTO.codigo,cliente,items, pedidoDTO.direccionEnvio);
 

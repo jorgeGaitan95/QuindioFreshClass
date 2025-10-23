@@ -1,9 +1,7 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
-import co.edu.uniquindio.SOLID.model.Cliente;
 import co.edu.uniquindio.SOLID.model.DTO.ClienteDTO;
-import co.edu.uniquindio.SOLID.model.Minimercado;
-import co.edu.uniquindio.SOLID.utils.Mappers.ClienteMapper;
+import co.edu.uniquindio.SOLID.Service.ClienteService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -15,7 +13,6 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class ClienteController implements Initializable {
 
@@ -37,14 +34,14 @@ public class ClienteController implements Initializable {
     
     @FXML private Label lblMensaje;
 
-    private Minimercado minimercado;
-    private ObservableList<ClienteDTO> clientesDTO;
+    private ClienteService clienteService;
+    private ObservableList<ClienteDTO> clientes;
     private ClienteDTO clienteSeleccionado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        minimercado = Minimercado.getInstancia();
-        clientesDTO = FXCollections.observableArrayList();
+        clienteService = new ClienteService();
+        clientes = FXCollections.observableArrayList();
         
         configurarTabla();
         cargarClientes();
@@ -54,12 +51,17 @@ public class ClienteController implements Initializable {
     }
 
     private void configurarTabla() {
-        colCedula.setCellValueFactory(cellData -> cellData.getValue().cedulaProperty());
-        colNombre.setCellValueFactory(cellData -> cellData.getValue().nombreProperty());
-        colCorreo.setCellValueFactory(cellData -> cellData.getValue().correoProperty());
-        colTelefono.setCellValueFactory(cellData -> cellData.getValue().telefonoProperty());
+        // Usar cellValueFactory con lambdas simples
+        colCedula.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getCedula()));
+        colNombre.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNombre()));
+        colCorreo.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getCorreo()));
+        colTelefono.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getTelefono()));
         
-        tblClientes.setItems(clientesDTO);
+        tblClientes.setItems(clientes);
     }
 
     private void configurarSeleccionTabla() {
@@ -72,18 +74,14 @@ public class ClienteController implements Initializable {
     }
 
     private void cargarClientes() {
-        clientesDTO.clear();
-        clientesDTO.addAll(
-            minimercado.getClientes().stream()
-                .map(ClienteMapper::toDTO)
-                .collect(Collectors.toList())
-        );
-        mostrarMensaje("Clientes cargados: " + clientesDTO.size(), false);
+        clientes.clear();
+        clientes.addAll(clienteService.obtenerTodosLosClientes());
+        mostrarMensaje("Clientes cargados: " + clientes.size(), false);
     }
 
     private void cargarDatosEnFormulario(ClienteDTO cliente) {
         txtCedula.setText(cliente.getCedula());
-        txtCedula.setDisable(true); // No se puede modificar la cédula
+        txtCedula.setDisable(true);
         txtNombre.setText(cliente.getNombre());
         txtCorreo.setText(cliente.getCorreo());
         txtTelefono.setText(cliente.getTelefono());
@@ -92,37 +90,25 @@ public class ClienteController implements Initializable {
     @FXML
     void agregarCliente(ActionEvent event) {
         try {
-            // Validar campos
             if (!validarCampos()) {
                 return;
             }
             
-            String cedula = txtCedula.getText().trim();
-            
-            // Verificar si ya existe un cliente con esa cédula
-            if (buscarClientePorCedula(cedula) != null) {
-                mostrarMensaje("Error: Ya existe un cliente con la cédula " + cedula, true);
-                return;
-            }
-            
-            // Crear DTO
-            ClienteDTO nuevoClienteDTO = new ClienteDTO(
-                cedula,
+            ClienteDTO nuevoCliente = new ClienteDTO(
+                txtCedula.getText().trim(),
                 txtNombre.getText().trim(),
                 txtCorreo.getText().trim(),
                 txtTelefono.getText().trim()
             );
             
-            // Convertir a entidad y agregar al minimercado
-            Cliente nuevoCliente = ClienteMapper.toEntity(nuevoClienteDTO);
-            minimercado.addCliente(nuevoCliente);
-            
-            // Recargar tabla
-            cargarClientes();
-            limpiarFormulario(null);
-            
-            mostrarMensaje("Cliente agregado exitosamente", false);
-            System.out.println("Cliente agregado: " + nuevoCliente);
+            if (clienteService.agregarCliente(nuevoCliente)) {
+                cargarClientes();
+                limpiarFormulario(null);
+                mostrarMensaje("Cliente agregado exitosamente", false);
+                System.out.println("Cliente agregado: " + nuevoCliente.getCedula());
+            } else {
+                mostrarMensaje("Error: Ya existe un cliente con la cédula " + nuevoCliente.getCedula(), true);
+            }
             
         } catch (Exception e) {
             mostrarMensaje("Error al agregar cliente: " + e.getMessage(), true);
@@ -142,24 +128,19 @@ public class ClienteController implements Initializable {
                 return;
             }
             
-            // Actualizar DTO
+            // Actualizar el DTO directamente
             clienteSeleccionado.setNombre(txtNombre.getText().trim());
             clienteSeleccionado.setCorreo(txtCorreo.getText().trim());
             clienteSeleccionado.setTelefono(txtTelefono.getText().trim());
             
-            // Buscar entidad y actualizar
-            Cliente clienteEntity = buscarClientePorCedula(clienteSeleccionado.getCedula());
-            if (clienteEntity != null) {
-                ClienteMapper.updateEntityFromDTO(clienteEntity, clienteSeleccionado);
+            if (clienteService.actualizarCliente(clienteSeleccionado)) {
+                tblClientes.refresh();
+                mostrarMensaje("Cliente actualizado exitosamente", false);
+                System.out.println("Cliente actualizado: " + clienteSeleccionado.getCedula());
+                limpiarFormulario(null);
+            } else {
+                mostrarMensaje("Error: No se pudo actualizar el cliente", true);
             }
-            
-            // Refrescar tabla
-            tblClientes.refresh();
-            
-            mostrarMensaje("Cliente actualizado exitosamente", false);
-            System.out.println("Cliente actualizado: " + clienteSeleccionado);
-            
-            limpiarFormulario(null);
             
         } catch (Exception e) {
             mostrarMensaje("Error al actualizar cliente: " + e.getMessage(), true);
@@ -175,7 +156,6 @@ public class ClienteController implements Initializable {
                 return;
             }
             
-            // Confirmar eliminación
             Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
             confirmacion.setTitle("Confirmar Eliminación");
             confirmacion.setHeaderText("¿Está seguro de eliminar este cliente?");
@@ -185,18 +165,14 @@ public class ClienteController implements Initializable {
             Optional<ButtonType> resultado = confirmacion.showAndWait();
             
             if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
-                // Buscar y eliminar entidad
-                Cliente clienteEntity = buscarClientePorCedula(clienteSeleccionado.getCedula());
-                if (clienteEntity != null) {
-                    minimercado.getClientes().remove(clienteEntity);
+                if (clienteService.eliminarCliente(clienteSeleccionado.getCedula())) {
+                    cargarClientes();
+                    limpiarFormulario(null);
+                    mostrarMensaje("Cliente eliminado exitosamente", false);
+                    System.out.println("Cliente eliminado: " + clienteSeleccionado.getCedula());
+                } else {
+                    mostrarMensaje("Error: No se pudo eliminar el cliente", true);
                 }
-                
-                // Recargar tabla
-                cargarClientes();
-                limpiarFormulario(null);
-                
-                mostrarMensaje("Cliente eliminado exitosamente", false);
-                System.out.println("Cliente eliminado: " + clienteSeleccionado.getCedula());
             }
             
         } catch (Exception e) {
@@ -222,12 +198,9 @@ public class ClienteController implements Initializable {
     @FXML
     void volverAPedidos(ActionEvent event) {
         try {
-            // Cerrar ventana actual
             Stage stage = (Stage) lblMensaje.getScene().getWindow();
             stage.close();
-            
             System.out.println("Volviendo a PedidoView");
-            
         } catch (Exception e) {
             mostrarMensaje("Error al navegar: " + e.getMessage(), true);
         }
@@ -254,7 +227,6 @@ public class ClienteController implements Initializable {
             return false;
         }
         
-        // Validar formato de correo básico
         String correo = txtCorreo.getText().trim();
         if (!correo.contains("@") || !correo.contains(".")) {
             mostrarMensaje("El formato del correo no es válido", true);
@@ -262,15 +234,6 @@ public class ClienteController implements Initializable {
         }
         
         return true;
-    }
-
-    private Cliente buscarClientePorCedula(String cedula) {
-        for (Cliente cliente : minimercado.getClientes()) {
-            if (cliente.getCedula().equals(cedula)) {
-                return cliente;
-            }
-        }
-        return null;
     }
 
     private void mostrarMensaje(String mensaje, boolean esError) {

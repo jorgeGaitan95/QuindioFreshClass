@@ -3,8 +3,8 @@ package co.edu.uniquindio.SOLID.Controlador;
 import co.edu.uniquindio.SOLID.model.*;
 import co.edu.uniquindio.SOLID.model.DTO.*;
 import co.edu.uniquindio.SOLID.Service.Fachadas.PedidoFacade;
-import co.edu.uniquindio.SOLID.utils.Mappers.ClienteMapper;
-import co.edu.uniquindio.SOLID.utils.Mappers.ProductoMapper;
+import co.edu.uniquindio.SOLID.Service.ClienteService;
+import co.edu.uniquindio.SOLID.Service.ProductoService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -43,13 +43,15 @@ public class PedidoController implements Initializable {
     @FXML private TextArea txtResultado;
 
     private PedidoFacade pedidoFacade;
+    private ClienteService clienteService;
+    private ProductoService productoService;
     private ObservableList<ItemPedidoDTO> itemsPedido;
-    private Minimercado minimercado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         pedidoFacade = new PedidoFacade();
-        minimercado = Minimercado.getInstancia();
+        clienteService = new ClienteService();
+        productoService = new ProductoService();
         itemsPedido = FXCollections.observableArrayList();
         
         // Configurar tabla
@@ -92,11 +94,11 @@ public class PedidoController implements Initializable {
             colCantidad.setCellValueFactory(cellData -> 
                 new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().cantidad).asObject());
             colPrecio.setCellValueFactory(cellData -> {
-                Producto p = buscarProductoPorSku(cellData.getValue().skuProducto);
+                ProductoDTO p = buscarProductoPorSku(cellData.getValue().skuProducto);
                 return new javafx.beans.property.SimpleDoubleProperty(p != null ? p.getPrecio() : 0).asObject();
             });
             colSubtotal.setCellValueFactory(cellData -> {
-                Producto p = buscarProductoPorSku(cellData.getValue().skuProducto);
+                ProductoDTO p = buscarProductoPorSku(cellData.getValue().skuProducto);
                 double subtotal = p != null ? p.getPrecio() * cellData.getValue().cantidad : 0;
                 return new javafx.beans.property.SimpleDoubleProperty(subtotal).asObject();
             });
@@ -107,10 +109,7 @@ public class PedidoController implements Initializable {
 
     private void cargarClientes() {
         if (cmbClientes != null) {
-            List<ClienteDTO> clientesDTO = new ArrayList<>();
-            for (Cliente cliente : minimercado.getClientes()) {
-                clientesDTO.add(ClienteMapper.toDTO(cliente));
-            }
+            List<ClienteDTO> clientesDTO = clienteService.obtenerTodosLosClientes();
             cmbClientes.setItems(FXCollections.observableArrayList(clientesDTO));
             
             // Configurar cómo se muestra el cliente
@@ -142,10 +141,7 @@ public class PedidoController implements Initializable {
 
     private void cargarProductos() {
         if (cmbProductos != null) {
-            List<ProductoDTO> productosDTO = new ArrayList<>();
-            for (Producto producto : minimercado.getProductos()) {
-                productosDTO.add(ProductoMapper.toDTO(producto));
-            }
+            List<ProductoDTO> productosDTO = productoService.obtenerTodosLosProductos();
             cmbProductos.setItems(FXCollections.observableArrayList(productosDTO));
             
             // Configurar cómo se muestra el producto
@@ -350,7 +346,7 @@ public class PedidoController implements Initializable {
     private double calcularSubtotal() {
         double subtotal = 0;
         for (ItemPedidoDTO item : itemsPedido) {
-            Producto producto = buscarProductoPorSku(item.skuProducto);
+            ProductoDTO producto = buscarProductoPorSku(item.skuProducto);
             if (producto != null) {
                 subtotal += producto.getPrecio() * item.cantidad;
             }
@@ -371,13 +367,8 @@ public class PedidoController implements Initializable {
         }
     }
 
-    private Producto buscarProductoPorSku(String sku) {
-        for (Producto p : minimercado.getProductos()) {
-            if (p.getSku().equals(sku)) {
-                return p;
-            }
-        }
-        return null;
+    private ProductoDTO buscarProductoPorSku(String sku) {
+        return productoService.buscarProductoPorSku(sku);
     }
 
     private void mostrarError(String mensaje) {

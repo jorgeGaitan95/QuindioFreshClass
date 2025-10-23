@@ -1,9 +1,7 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
-import co.edu.uniquindio.SOLID.model.Producto;
 import co.edu.uniquindio.SOLID.model.DTO.ProductoDTO;
-import co.edu.uniquindio.SOLID.model.Minimercado;
-import co.edu.uniquindio.SOLID.utils.Mappers.ProductoMapper;
+import co.edu.uniquindio.SOLID.Service.ProductoService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -15,7 +13,6 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class ProductoController implements Initializable {
 
@@ -35,14 +32,14 @@ public class ProductoController implements Initializable {
     
     @FXML private Label lblMensaje;
 
-    private Minimercado minimercado;
-    private ObservableList<ProductoDTO> productosDTO;
+    private ProductoService productoService;
+    private ObservableList<ProductoDTO> productos;
     private ProductoDTO productoSeleccionado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        minimercado = Minimercado.getInstancia();
-        productosDTO = FXCollections.observableArrayList();
+        productoService = new ProductoService();
+        productos = FXCollections.observableArrayList();
         
         configurarTabla();
         cargarProductos();
@@ -52,11 +49,15 @@ public class ProductoController implements Initializable {
     }
 
     private void configurarTabla() {
-        colSku.setCellValueFactory(cellData -> cellData.getValue().skuProperty());
-        colNombre.setCellValueFactory(cellData -> cellData.getValue().nombreProperty());
-        colPrecio.setCellValueFactory(cellData -> cellData.getValue().precioProperty().asObject());
+        // Usar cellValueFactory con lambdas simples
+        colSku.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getSku()));
+        colNombre.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNombre()));
+        colPrecio.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleDoubleProperty(cellData.getValue().getPrecio()).asObject());
         
-        tblProductos.setItems(productosDTO);
+        tblProductos.setItems(productos);
     }
 
     private void configurarSeleccionTabla() {
@@ -69,18 +70,14 @@ public class ProductoController implements Initializable {
     }
 
     private void cargarProductos() {
-        productosDTO.clear();
-        productosDTO.addAll(
-            minimercado.getProductos().stream()
-                .map(ProductoMapper::toDTO)
-                .collect(Collectors.toList())
-        );
-        mostrarMensaje("Productos cargados: " + productosDTO.size(), false);
+        productos.clear();
+        productos.addAll(productoService.obtenerTodosLosProductos());
+        mostrarMensaje("Productos cargados: " + productos.size(), false);
     }
 
     private void cargarDatosEnFormulario(ProductoDTO producto) {
         txtSku.setText(producto.getSku());
-        txtSku.setDisable(true); // No se puede modificar el SKU
+        txtSku.setDisable(true);
         txtNombre.setText(producto.getNombre());
         txtPrecio.setText(String.valueOf(producto.getPrecio()));
     }
@@ -88,36 +85,24 @@ public class ProductoController implements Initializable {
     @FXML
     void agregarProducto(ActionEvent event) {
         try {
-            // Validar campos
             if (!validarCampos()) {
                 return;
             }
             
-            String sku = txtSku.getText().trim();
-            
-            // Verificar si ya existe un producto con ese SKU
-            if (buscarProductoPorSku(sku) != null) {
-                mostrarMensaje("Error: Ya existe un producto con el SKU " + sku, true);
-                return;
-            }
-            
-            // Crear DTO
-            ProductoDTO nuevoProductoDTO = new ProductoDTO(
-                sku,
+            ProductoDTO nuevoProducto = new ProductoDTO(
+                txtSku.getText().trim(),
                 txtNombre.getText().trim(),
                 Double.parseDouble(txtPrecio.getText().trim())
             );
             
-            // Convertir a entidad y agregar al minimercado
-            Producto nuevoProducto = ProductoMapper.toEntity(nuevoProductoDTO);
-            minimercado.addProducto(nuevoProducto);
-            
-            // Recargar tabla
-            cargarProductos();
-            limpiarFormulario(null);
-            
-            mostrarMensaje("Producto agregado exitosamente", false);
-            System.out.println("Producto agregado: " + nuevoProducto);
+            if (productoService.agregarProducto(nuevoProducto)) {
+                cargarProductos();
+                limpiarFormulario(null);
+                mostrarMensaje("Producto agregado exitosamente", false);
+                System.out.println("Producto agregado: " + nuevoProducto.getSku());
+            } else {
+                mostrarMensaje("Error: Ya existe un producto con el SKU " + nuevoProducto.getSku(), true);
+            }
             
         } catch (NumberFormatException e) {
             mostrarMensaje("Error: El precio debe ser un número válido", true);
@@ -139,23 +124,18 @@ public class ProductoController implements Initializable {
                 return;
             }
             
-            // Actualizar DTO
+            // Actualizar el DTO directamente
             productoSeleccionado.setNombre(txtNombre.getText().trim());
             productoSeleccionado.setPrecio(Double.parseDouble(txtPrecio.getText().trim()));
             
-            // Buscar entidad y actualizar
-            Producto productoEntity = buscarProductoPorSku(productoSeleccionado.getSku());
-            if (productoEntity != null) {
-                ProductoMapper.updateEntityFromDTO(productoEntity, productoSeleccionado);
+            if (productoService.actualizarProducto(productoSeleccionado)) {
+                tblProductos.refresh();
+                mostrarMensaje("Producto actualizado exitosamente", false);
+                System.out.println("Producto actualizado: " + productoSeleccionado.getSku());
+                limpiarFormulario(null);
+            } else {
+                mostrarMensaje("Error: No se pudo actualizar el producto", true);
             }
-            
-            // Refrescar tabla
-            tblProductos.refresh();
-            
-            mostrarMensaje("Producto actualizado exitosamente", false);
-            System.out.println("Producto actualizado: " + productoSeleccionado);
-            
-            limpiarFormulario(null);
             
         } catch (NumberFormatException e) {
             mostrarMensaje("Error: El precio debe ser un número válido", true);
@@ -173,7 +153,6 @@ public class ProductoController implements Initializable {
                 return;
             }
             
-            // Confirmar eliminación
             Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
             confirmacion.setTitle("Confirmar Eliminación");
             confirmacion.setHeaderText("¿Está seguro de eliminar este producto?");
@@ -184,18 +163,14 @@ public class ProductoController implements Initializable {
             Optional<ButtonType> resultado = confirmacion.showAndWait();
             
             if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
-                // Buscar y eliminar entidad
-                Producto productoEntity = buscarProductoPorSku(productoSeleccionado.getSku());
-                if (productoEntity != null) {
-                    minimercado.getProductos().remove(productoEntity);
+                if (productoService.eliminarProducto(productoSeleccionado.getSku())) {
+                    cargarProductos();
+                    limpiarFormulario(null);
+                    mostrarMensaje("Producto eliminado exitosamente", false);
+                    System.out.println("Producto eliminado: " + productoSeleccionado.getSku());
+                } else {
+                    mostrarMensaje("Error: No se pudo eliminar el producto", true);
                 }
-                
-                // Recargar tabla
-                cargarProductos();
-                limpiarFormulario(null);
-                
-                mostrarMensaje("Producto eliminado exitosamente", false);
-                System.out.println("Producto eliminado: " + productoSeleccionado.getSku());
             }
             
         } catch (Exception e) {
@@ -220,12 +195,9 @@ public class ProductoController implements Initializable {
     @FXML
     void volverAPedidos(ActionEvent event) {
         try {
-            // Cerrar ventana actual
             Stage stage = (Stage) lblMensaje.getScene().getWindow();
             stage.close();
-            
             System.out.println("Volviendo a PedidoView");
-            
         } catch (Exception e) {
             mostrarMensaje("Error al navegar: " + e.getMessage(), true);
         }
@@ -247,7 +219,6 @@ public class ProductoController implements Initializable {
             return false;
         }
         
-        // Validar que el precio sea un número válido
         try {
             double precio = Double.parseDouble(txtPrecio.getText().trim());
             if (precio <= 0) {
@@ -260,15 +231,6 @@ public class ProductoController implements Initializable {
         }
         
         return true;
-    }
-
-    private Producto buscarProductoPorSku(String sku) {
-        for (Producto producto : minimercado.getProductos()) {
-            if (producto.getSku().equals(sku)) {
-                return producto;
-            }
-        }
-        return null;
     }
 
     private void mostrarMensaje(String mensaje, boolean esError) {
