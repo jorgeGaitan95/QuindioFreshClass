@@ -1,7 +1,7 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
 import co.edu.uniquindio.SOLID.model.DTO.ProductoDTO;
-import co.edu.uniquindio.SOLID.Service.ProductoService;
+import co.edu.uniquindio.SOLID.Service.Fachadas.MinimercadoFacade;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -32,13 +32,13 @@ public class ProductoController implements Initializable {
     
     @FXML private Label lblMensaje;
 
-    private ProductoService productoService;
+    private MinimercadoFacade minimercadoFacade;
     private ObservableList<ProductoDTO> productos;
     private ProductoDTO productoSeleccionado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        productoService = new ProductoService();
+        minimercadoFacade = new MinimercadoFacade();
         productos = FXCollections.observableArrayList();
         
         configurarTabla();
@@ -49,7 +49,6 @@ public class ProductoController implements Initializable {
     }
 
     private void configurarTabla() {
-        // Usar cellValueFactory con lambdas simples
         colSku.setCellValueFactory(cellData -> 
             new javafx.beans.property.SimpleStringProperty(cellData.getValue().getSku()));
         colNombre.setCellValueFactory(cellData -> 
@@ -71,7 +70,7 @@ public class ProductoController implements Initializable {
 
     private void cargarProductos() {
         productos.clear();
-        productos.addAll(productoService.obtenerTodosLosProductos());
+        productos.addAll(minimercadoFacade.obtenerTodosLosProductos());
         mostrarMensaje("Productos cargados: " + productos.size(), false);
     }
 
@@ -95,7 +94,7 @@ public class ProductoController implements Initializable {
                 Double.parseDouble(txtPrecio.getText().trim())
             );
             
-            if (productoService.agregarProducto(nuevoProducto)) {
+            if (minimercadoFacade.agregarProducto(nuevoProducto)) {
                 cargarProductos();
                 limpiarFormulario(null);
                 mostrarMensaje("Producto agregado exitosamente", false);
@@ -124,11 +123,10 @@ public class ProductoController implements Initializable {
                 return;
             }
             
-            // Actualizar el DTO directamente
             productoSeleccionado.setNombre(txtNombre.getText().trim());
             productoSeleccionado.setPrecio(Double.parseDouble(txtPrecio.getText().trim()));
             
-            if (productoService.actualizarProducto(productoSeleccionado)) {
+            if (minimercadoFacade.actualizarProducto(productoSeleccionado)) {
                 tblProductos.refresh();
                 mostrarMensaje("Producto actualizado exitosamente", false);
                 System.out.println("Producto actualizado: " + productoSeleccionado.getSku());
@@ -163,7 +161,7 @@ public class ProductoController implements Initializable {
             Optional<ButtonType> resultado = confirmacion.showAndWait();
             
             if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
-                if (productoService.eliminarProducto(productoSeleccionado.getSku())) {
+                if (minimercadoFacade.eliminarProducto(productoSeleccionado.getSku())) {
                     cargarProductos();
                     limpiarFormulario(null);
                     mostrarMensaje("Producto eliminado exitosamente", false);

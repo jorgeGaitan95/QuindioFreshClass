@@ -2,9 +2,7 @@ package co.edu.uniquindio.SOLID.Controlador;
 
 import co.edu.uniquindio.SOLID.model.*;
 import co.edu.uniquindio.SOLID.model.DTO.*;
-import co.edu.uniquindio.SOLID.Service.Fachadas.PedidoFacade;
-import co.edu.uniquindio.SOLID.Service.ClienteService;
-import co.edu.uniquindio.SOLID.Service.ProductoService;
+import co.edu.uniquindio.SOLID.Service.Fachadas.MinimercadoFacade;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -42,16 +40,12 @@ public class PedidoController implements Initializable {
     @FXML private Label lblTotal;
     @FXML private TextArea txtResultado;
 
-    private PedidoFacade pedidoFacade;
-    private ClienteService clienteService;
-    private ProductoService productoService;
+    private MinimercadoFacade minimercadoFacade;
     private ObservableList<ItemPedidoDTO> itemsPedido;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        pedidoFacade = new PedidoFacade();
-        clienteService = new ClienteService();
-        productoService = new ProductoService();
+        minimercadoFacade = new MinimercadoFacade();
         itemsPedido = FXCollections.observableArrayList();
         
         // Configurar tabla
@@ -109,7 +103,7 @@ public class PedidoController implements Initializable {
 
     private void cargarClientes() {
         if (cmbClientes != null) {
-            List<ClienteDTO> clientesDTO = clienteService.obtenerTodosLosClientes();
+            List<ClienteDTO> clientesDTO = minimercadoFacade.obtenerTodosLosClientes();
             cmbClientes.setItems(FXCollections.observableArrayList(clientesDTO));
             
             // Configurar cómo se muestra el cliente
@@ -141,7 +135,7 @@ public class PedidoController implements Initializable {
 
     private void cargarProductos() {
         if (cmbProductos != null) {
-            List<ProductoDTO> productosDTO = productoService.obtenerTodosLosProductos();
+            List<ProductoDTO> productosDTO = minimercadoFacade.obtenerTodosLosProductos();
             cmbProductos.setItems(FXCollections.observableArrayList(productosDTO));
             
             // Configurar cómo se muestra el producto
@@ -234,12 +228,12 @@ public class PedidoController implements Initializable {
             pedidoDTO.codigoDescuento = txtCodigoDescuento.getText();
             
             // Procesar pedido usando el Facade
-            PedidoDTO resultado = pedidoFacade.crearPedido(pedidoDTO);
+            ResumenPedidoDTO resultado = minimercadoFacade.procesarPedido(pedidoDTO);
             
             // Calcular totales
             double subtotal = calcularSubtotal();
             double costoEnvio = calcularCostoEnvio();
-            double total = subtotal + costoEnvio;
+            double total = minimercadoFacade.calcularTotal(subtotal, costoEnvio);
             
             // Mostrar resultado
             txtResultado.setText(
@@ -336,7 +330,7 @@ public class PedidoController implements Initializable {
     private void actualizarTotales() {
         double subtotal = calcularSubtotal();
         double costoEnvio = calcularCostoEnvio();
-        double total = subtotal + costoEnvio;
+        double total = minimercadoFacade.calcularTotal(subtotal, costoEnvio);
 
         if (lblSubtotal != null) lblSubtotal.setText(String.format("$%.2f", subtotal));
         if (lblCostoEnvio != null) lblCostoEnvio.setText(String.format("$%.2f", costoEnvio));
@@ -344,31 +338,16 @@ public class PedidoController implements Initializable {
     }
 
     private double calcularSubtotal() {
-        double subtotal = 0;
-        for (ItemPedidoDTO item : itemsPedido) {
-            ProductoDTO producto = buscarProductoPorSku(item.skuProducto);
-            if (producto != null) {
-                subtotal += producto.getPrecio() * item.cantidad;
-            }
-        }
-        return subtotal;
+        return minimercadoFacade.calcularSubtotal(itemsPedido);
     }
 
     private double calcularCostoEnvio() {
-        if (cmbTipoEnvio == null || cmbTipoEnvio.getValue() == null) {
-            return 7000; // ESTANDAR por defecto
-        }
-        
-        String tipoEnvio = cmbTipoEnvio.getValue();
-        if (tipoEnvio.equals("EXPRESS")) {
-            return 15000;
-        } else {
-            return 7000; // ESTANDAR
-        }
+        String tipoEnvio = cmbTipoEnvio != null ? cmbTipoEnvio.getValue() : "ESTANDAR";
+        return minimercadoFacade.calcularCostoEnvio(tipoEnvio);
     }
 
     private ProductoDTO buscarProductoPorSku(String sku) {
-        return productoService.buscarProductoPorSku(sku);
+        return minimercadoFacade.buscarProductoPorSku(sku);
     }
 
     private void mostrarError(String mensaje) {
