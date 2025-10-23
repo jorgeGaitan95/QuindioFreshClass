@@ -3,6 +3,7 @@ package co.edu.uniquindio.SOLID.Service;
 import co.edu.uniquindio.SOLID.model.*;
 import co.edu.uniquindio.SOLID.model.DTO.ItemPedidoDTO;
 import co.edu.uniquindio.SOLID.model.DTO.PedidoDTO;
+import co.edu.uniquindio.SOLID.model.DTO.ResumenPedidoDTO;
 import co.edu.uniquindio.SOLID.Service.Envio.Envio;
 import co.edu.uniquindio.SOLID.Service.Envio.EnvioExpress;
 import co.edu.uniquindio.SOLID.Service.Notificacion.Notificacion;
@@ -72,7 +73,62 @@ public class PedidoService {
         return subtotal;
     }
 
-  public double calcularTotal(Pedido pedido, Envio envio) {
+    public double calcularTotal(Pedido pedido, Envio envio) {
         return calcularSubtotal(pedido) + envio.calcularCostoEnvio();
+    }
+    
+    // ========== MÉTODOS PARA FACADE ==========
+    
+    /**
+     * Procesa un pedido y retorna resumen
+     */
+    public ResumenPedidoDTO procesarPedido(PedidoDTO pedidoDTO) {
+        Pedido pedidoCreado = crearPedido(pedidoDTO);
+        
+        ResumenPedidoDTO resumen = new ResumenPedidoDTO();
+        resumen.codigo = pedidoCreado.getCodigo();
+        resumen.nombreCliente = pedidoCreado.getCliente().getNombre();
+        resumen.items = pedidoDTO.itemsPedido;
+        resumen.direccionEnvio = pedidoDTO.direccionEnvio;
+        resumen.notas = pedidoDTO.notas;
+        resumen.codigoDescuento = pedidoDTO.codigoDescuento;
+        resumen.subtotal = calcularSubtotal(pedidoDTO.itemsPedido);
+        resumen.costoEnvio = calcularCostoEnvio("ESTANDAR");
+        resumen.total = calcularTotal(resumen.subtotal, resumen.costoEnvio);
+        resumen.estado = "PROCESADO";
+        
+        return resumen;
+    }
+    
+    /**
+     * Calcula subtotal de items DTO
+     */
+    public double calcularSubtotal(List<ItemPedidoDTO> items) {
+        double subtotal = 0;
+        for (ItemPedidoDTO item : items) {
+            Producto producto = catalogoProductosService.buscarProducto(item.skuProducto);
+            if (producto != null) {
+                subtotal += producto.getPrecio() * item.cantidad;
+            }
+        }
+        return subtotal;
+    }
+    
+    /**
+     * Calcula costo de envío por tipo
+     */
+    public double calcularCostoEnvio(String tipoEnvio) {
+        if (tipoEnvio != null && tipoEnvio.equals("EXPRESS")) {
+            return 15000; // EXPRESS
+        } else {
+            return 7000; // ESTANDAR
+        }
+    }
+    
+    /**
+     * Calcula total simple
+     */
+    public double calcularTotal(double subtotal, double costoEnvio) {
+        return subtotal + costoEnvio;
     }
 }
