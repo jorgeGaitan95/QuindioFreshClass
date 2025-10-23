@@ -1,46 +1,68 @@
 package co.edu.uniquindio.SOLID.model.DTO;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-
 public class ClienteDTO {
-    private StringProperty cedula;
-    private StringProperty nombre;
-    private StringProperty correo;
-    private StringProperty telefono;
+    private String cedula;
+    private String nombre;
+    private String correo;
+    private String telefono;
 
     public ClienteDTO() {
-        this.cedula = new SimpleStringProperty();
-        this.nombre = new SimpleStringProperty();
-        this.correo = new SimpleStringProperty();
-        this.telefono = new SimpleStringProperty();
     }
 
     public ClienteDTO(String cedula, String nombre, String correo, String telefono) {
-        this();
-        setCedula(cedula);
-        setNombre(nombre);
-        setCorreo(correo);
-        setTelefono(telefono);
+        this.cedula = cedula;
+        this.nombre = nombre;
+        this.correo = correo;
+        this.telefono = telefono;
     }
 
-    public String getCedula() { return cedula.get(); }
-    public String getNombre() { return nombre.get(); }
-    public String getCorreo() { return correo.get(); }
-    public String getTelefono() { return telefono.get(); }
+    public String getCedula() {
+        return cedula;
+    }
 
-    public void setCedula(String cedula) { this.cedula.set(cedula); }
-    public void setNombre(String nombre) { this.nombre.set(nombre); }
-    public void setCorreo(String correo) { this.correo.set(correo); }
-    public void setTelefono(String telefono) { this.telefono.set(telefono); }
+    public void setCedula(String cedula) {
+        this.cedula = cedula;
+    }
 
-    public StringProperty cedulaProperty() { return cedula; }
-    public StringProperty nombreProperty() { return nombre; }
-    public StringProperty correoProperty() { return correo; }
-    public StringProperty telefonoProperty() { return telefono; }
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
 
     @Override
     public String toString() {
-        return getNombre() + " (" + getCedula() + ")";
+        return nombre + " (" + cedula + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClienteDTO that = (ClienteDTO) o;
+        return cedula != null && cedula.equals(that.cedula);
+    }
+
+    @Override
+    public int hashCode() {
+        return cedula != null ? cedula.hashCode() : 0;
     }
 }
