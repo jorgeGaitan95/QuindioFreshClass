@@ -1,29 +1,28 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
 import co.edu.uniquindio.SOLID.model.Producto;
+import co.edu.uniquindio.SOLID.model.DTO.ProductoDTO;
 import co.edu.uniquindio.SOLID.model.Minimercado;
+import co.edu.uniquindio.SOLID.utils.Mappers.ProductoMapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class ProductoController implements Initializable {
 
-    @FXML private TableView<Producto> tblProductos;
-    @FXML private TableColumn<Producto, String> colSku;
-    @FXML private TableColumn<Producto, String> colNombre;
-    @FXML private TableColumn<Producto, Double> colPrecio;
+    @FXML private TableView<ProductoDTO> tblProductos;
+    @FXML private TableColumn<ProductoDTO, String> colSku;
+    @FXML private TableColumn<ProductoDTO, String> colNombre;
+    @FXML private TableColumn<ProductoDTO, Double> colPrecio;
     
     @FXML private TextField txtSku;
     @FXML private TextField txtNombre;
@@ -37,13 +36,13 @@ public class ProductoController implements Initializable {
     @FXML private Label lblMensaje;
 
     private Minimercado minimercado;
-    private ObservableList<Producto> productos;
-    private Producto productoSeleccionado;
+    private ObservableList<ProductoDTO> productosDTO;
+    private ProductoDTO productoSeleccionado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         minimercado = Minimercado.getInstancia();
-        productos = FXCollections.observableArrayList();
+        productosDTO = FXCollections.observableArrayList();
         
         configurarTabla();
         cargarProductos();
@@ -53,11 +52,11 @@ public class ProductoController implements Initializable {
     }
 
     private void configurarTabla() {
-        colSku.setCellValueFactory(new PropertyValueFactory<>("sku"));
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        colPrecio.setCellValueFactory(new PropertyValueFactory<>("precio"));
+        colSku.setCellValueFactory(cellData -> cellData.getValue().skuProperty());
+        colNombre.setCellValueFactory(cellData -> cellData.getValue().nombreProperty());
+        colPrecio.setCellValueFactory(cellData -> cellData.getValue().precioProperty().asObject());
         
-        tblProductos.setItems(productos);
+        tblProductos.setItems(productosDTO);
     }
 
     private void configurarSeleccionTabla() {
@@ -70,12 +69,16 @@ public class ProductoController implements Initializable {
     }
 
     private void cargarProductos() {
-        productos.clear();
-        productos.addAll(minimercado.getProductos());
-        mostrarMensaje("Productos cargados: " + productos.size(), false);
+        productosDTO.clear();
+        productosDTO.addAll(
+            minimercado.getProductos().stream()
+                .map(ProductoMapper::toDTO)
+                .collect(Collectors.toList())
+        );
+        mostrarMensaje("Productos cargados: " + productosDTO.size(), false);
     }
 
-    private void cargarDatosEnFormulario(Producto producto) {
+    private void cargarDatosEnFormulario(ProductoDTO producto) {
         txtSku.setText(producto.getSku());
         txtSku.setDisable(true); // No se puede modificar el SKU
         txtNombre.setText(producto.getNombre());
@@ -98,14 +101,15 @@ public class ProductoController implements Initializable {
                 return;
             }
             
-            // Crear nuevo producto
-            Producto nuevoProducto = new Producto(
+            // Crear DTO
+            ProductoDTO nuevoProductoDTO = new ProductoDTO(
                 sku,
                 txtNombre.getText().trim(),
                 Double.parseDouble(txtPrecio.getText().trim())
             );
             
-            // Agregar al minimercado
+            // Convertir a entidad y agregar al minimercado
+            Producto nuevoProducto = ProductoMapper.toEntity(nuevoProductoDTO);
             minimercado.addProducto(nuevoProducto);
             
             // Recargar tabla
@@ -135,9 +139,15 @@ public class ProductoController implements Initializable {
                 return;
             }
             
-            // Actualizar datos del producto seleccionado
+            // Actualizar DTO
             productoSeleccionado.setNombre(txtNombre.getText().trim());
             productoSeleccionado.setPrecio(Double.parseDouble(txtPrecio.getText().trim()));
+            
+            // Buscar entidad y actualizar
+            Producto productoEntity = buscarProductoPorSku(productoSeleccionado.getSku());
+            if (productoEntity != null) {
+                ProductoMapper.updateEntityFromDTO(productoEntity, productoSeleccionado);
+            }
             
             // Refrescar tabla
             tblProductos.refresh();
@@ -174,8 +184,11 @@ public class ProductoController implements Initializable {
             Optional<ButtonType> resultado = confirmacion.showAndWait();
             
             if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
-                // Eliminar producto
-                minimercado.getProductos().remove(productoSeleccionado);
+                // Buscar y eliminar entidad
+                Producto productoEntity = buscarProductoPorSku(productoSeleccionado.getSku());
+                if (productoEntity != null) {
+                    minimercado.getProductos().remove(productoEntity);
+                }
                 
                 // Recargar tabla
                 cargarProductos();

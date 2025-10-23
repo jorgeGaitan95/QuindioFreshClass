@@ -3,6 +3,8 @@ package co.edu.uniquindio.SOLID.Controlador;
 import co.edu.uniquindio.SOLID.model.*;
 import co.edu.uniquindio.SOLID.model.DTO.*;
 import co.edu.uniquindio.SOLID.Service.Fachadas.PedidoFacade;
+import co.edu.uniquindio.SOLID.utils.Mappers.ClienteMapper;
+import co.edu.uniquindio.SOLID.utils.Mappers.ProductoMapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -21,8 +23,8 @@ import java.util.ResourceBundle;
 
 public class PedidoController implements Initializable {
 
-    @FXML private ComboBox<Cliente> cmbClientes;
-    @FXML private ComboBox<Producto> cmbProductos;
+    @FXML private ComboBox<ClienteDTO> cmbClientes;
+    @FXML private ComboBox<ProductoDTO> cmbProductos;
     @FXML private Spinner<Integer> spnCantidad;
     @FXML private TableView<ItemPedidoDTO> tblItemsPedido;
     @FXML private TableColumn<ItemPedidoDTO, String> colProducto;
@@ -105,30 +107,33 @@ public class PedidoController implements Initializable {
 
     private void cargarClientes() {
         if (cmbClientes != null) {
-            List<Cliente> clientes = minimercado.getClientes();
-            cmbClientes.setItems(FXCollections.observableArrayList(clientes));
+            List<ClienteDTO> clientesDTO = new ArrayList<>();
+            for (Cliente cliente : minimercado.getClientes()) {
+                clientesDTO.add(ClienteMapper.toDTO(cliente));
+            }
+            cmbClientes.setItems(FXCollections.observableArrayList(clientesDTO));
             
             // Configurar cómo se muestra el cliente
-            cmbClientes.setButtonCell(new ListCell<Cliente>() {
+            cmbClientes.setButtonCell(new ListCell<ClienteDTO>() {
                 @Override
-                protected void updateItem(Cliente item, boolean empty) {
+                protected void updateItem(ClienteDTO item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || item == null) {
                         setText(null);
                     } else {
-                        setText(item.getNombre() + " (" + item.getCedula() + ")");
+                        setText(item.toString());
                     }
                 }
             });
             
-            cmbClientes.setCellFactory(param -> new ListCell<Cliente>() {
+            cmbClientes.setCellFactory(param -> new ListCell<ClienteDTO>() {
                 @Override
-                protected void updateItem(Cliente item, boolean empty) {
+                protected void updateItem(ClienteDTO item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || item == null) {
                         setText(null);
                     } else {
-                        setText(item.getNombre() + " (" + item.getCedula() + ")");
+                        setText(item.toString());
                     }
                 }
             });
@@ -137,30 +142,33 @@ public class PedidoController implements Initializable {
 
     private void cargarProductos() {
         if (cmbProductos != null) {
-            List<Producto> productos = minimercado.getProductos();
-            cmbProductos.setItems(FXCollections.observableArrayList(productos));
+            List<ProductoDTO> productosDTO = new ArrayList<>();
+            for (Producto producto : minimercado.getProductos()) {
+                productosDTO.add(ProductoMapper.toDTO(producto));
+            }
+            cmbProductos.setItems(FXCollections.observableArrayList(productosDTO));
             
             // Configurar cómo se muestra el producto
-            cmbProductos.setButtonCell(new ListCell<Producto>() {
+            cmbProductos.setButtonCell(new ListCell<ProductoDTO>() {
                 @Override
-                protected void updateItem(Producto item, boolean empty) {
+                protected void updateItem(ProductoDTO item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || item == null) {
                         setText(null);
                     } else {
-                        setText(item.getNombre() + " - $" + item.getPrecio());
+                        setText(item.toString());
                     }
                 }
             });
             
-            cmbProductos.setCellFactory(param -> new ListCell<Producto>() {
+            cmbProductos.setCellFactory(param -> new ListCell<ProductoDTO>() {
                 @Override
-                protected void updateItem(Producto item, boolean empty) {
+                protected void updateItem(ProductoDTO item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || item == null) {
                         setText(null);
                     } else {
-                        setText(item.getNombre() + " - $" + item.getPrecio());
+                        setText(item.toString());
                     }
                 }
             });
@@ -169,10 +177,10 @@ public class PedidoController implements Initializable {
 
     @FXML
     void agregarItem(ActionEvent event) {
-        Producto producto = cmbProductos.getValue();
+        ProductoDTO productoDTO = cmbProductos.getValue();
         Integer cantidad = spnCantidad.getValue();
 
-        if (producto == null) {
+        if (productoDTO == null) {
             mostrarError("Seleccione un producto");
             return;
         }
@@ -182,11 +190,11 @@ public class PedidoController implements Initializable {
             return;
         }
 
-        ItemPedidoDTO item = new ItemPedidoDTO(producto.getSku(), cantidad);
+        ItemPedidoDTO item = new ItemPedidoDTO(productoDTO.getSku(), cantidad);
         itemsPedido.add(item);
         
         actualizarTotales();
-        System.out.println("Item agregado: " + producto.getNombre() + " x" + cantidad);
+        System.out.println("Item agregado: " + productoDTO.getNombre() + " x" + cantidad);
     }
 
     @FXML

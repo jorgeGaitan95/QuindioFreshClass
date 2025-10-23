@@ -1,30 +1,29 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
 import co.edu.uniquindio.SOLID.model.Cliente;
+import co.edu.uniquindio.SOLID.model.DTO.ClienteDTO;
 import co.edu.uniquindio.SOLID.model.Minimercado;
+import co.edu.uniquindio.SOLID.utils.Mappers.ClienteMapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class ClienteController implements Initializable {
 
-    @FXML private TableView<Cliente> tblClientes;
-    @FXML private TableColumn<Cliente, String> colCedula;
-    @FXML private TableColumn<Cliente, String> colNombre;
-    @FXML private TableColumn<Cliente, String> colCorreo;
-    @FXML private TableColumn<Cliente, String> colTelefono;
+    @FXML private TableView<ClienteDTO> tblClientes;
+    @FXML private TableColumn<ClienteDTO, String> colCedula;
+    @FXML private TableColumn<ClienteDTO, String> colNombre;
+    @FXML private TableColumn<ClienteDTO, String> colCorreo;
+    @FXML private TableColumn<ClienteDTO, String> colTelefono;
     
     @FXML private TextField txtCedula;
     @FXML private TextField txtNombre;
@@ -39,13 +38,13 @@ public class ClienteController implements Initializable {
     @FXML private Label lblMensaje;
 
     private Minimercado minimercado;
-    private ObservableList<Cliente> clientes;
-    private Cliente clienteSeleccionado;
+    private ObservableList<ClienteDTO> clientesDTO;
+    private ClienteDTO clienteSeleccionado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         minimercado = Minimercado.getInstancia();
-        clientes = FXCollections.observableArrayList();
+        clientesDTO = FXCollections.observableArrayList();
         
         configurarTabla();
         cargarClientes();
@@ -55,12 +54,12 @@ public class ClienteController implements Initializable {
     }
 
     private void configurarTabla() {
-        colCedula.setCellValueFactory(new PropertyValueFactory<>("cedula"));
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        colCorreo.setCellValueFactory(new PropertyValueFactory<>("correo"));
-        colTelefono.setCellValueFactory(new PropertyValueFactory<>("telefono"));
+        colCedula.setCellValueFactory(cellData -> cellData.getValue().cedulaProperty());
+        colNombre.setCellValueFactory(cellData -> cellData.getValue().nombreProperty());
+        colCorreo.setCellValueFactory(cellData -> cellData.getValue().correoProperty());
+        colTelefono.setCellValueFactory(cellData -> cellData.getValue().telefonoProperty());
         
-        tblClientes.setItems(clientes);
+        tblClientes.setItems(clientesDTO);
     }
 
     private void configurarSeleccionTabla() {
@@ -73,12 +72,16 @@ public class ClienteController implements Initializable {
     }
 
     private void cargarClientes() {
-        clientes.clear();
-        clientes.addAll(minimercado.getClientes());
-        mostrarMensaje("Clientes cargados: " + clientes.size(), false);
+        clientesDTO.clear();
+        clientesDTO.addAll(
+            minimercado.getClientes().stream()
+                .map(ClienteMapper::toDTO)
+                .collect(Collectors.toList())
+        );
+        mostrarMensaje("Clientes cargados: " + clientesDTO.size(), false);
     }
 
-    private void cargarDatosEnFormulario(Cliente cliente) {
+    private void cargarDatosEnFormulario(ClienteDTO cliente) {
         txtCedula.setText(cliente.getCedula());
         txtCedula.setDisable(true); // No se puede modificar la cédula
         txtNombre.setText(cliente.getNombre());
@@ -102,15 +105,16 @@ public class ClienteController implements Initializable {
                 return;
             }
             
-            // Crear nuevo cliente
-            Cliente nuevoCliente = new Cliente(
+            // Crear DTO
+            ClienteDTO nuevoClienteDTO = new ClienteDTO(
                 cedula,
                 txtNombre.getText().trim(),
                 txtCorreo.getText().trim(),
                 txtTelefono.getText().trim()
             );
             
-            // Agregar al minimercado
+            // Convertir a entidad y agregar al minimercado
+            Cliente nuevoCliente = ClienteMapper.toEntity(nuevoClienteDTO);
             minimercado.addCliente(nuevoCliente);
             
             // Recargar tabla
@@ -138,10 +142,16 @@ public class ClienteController implements Initializable {
                 return;
             }
             
-            // Actualizar datos del cliente seleccionado
+            // Actualizar DTO
             clienteSeleccionado.setNombre(txtNombre.getText().trim());
             clienteSeleccionado.setCorreo(txtCorreo.getText().trim());
             clienteSeleccionado.setTelefono(txtTelefono.getText().trim());
+            
+            // Buscar entidad y actualizar
+            Cliente clienteEntity = buscarClientePorCedula(clienteSeleccionado.getCedula());
+            if (clienteEntity != null) {
+                ClienteMapper.updateEntityFromDTO(clienteEntity, clienteSeleccionado);
+            }
             
             // Refrescar tabla
             tblClientes.refresh();
@@ -175,8 +185,11 @@ public class ClienteController implements Initializable {
             Optional<ButtonType> resultado = confirmacion.showAndWait();
             
             if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
-                // Eliminar cliente
-                minimercado.getClientes().remove(clienteSeleccionado);
+                // Buscar y eliminar entidad
+                Cliente clienteEntity = buscarClientePorCedula(clienteSeleccionado.getCedula());
+                if (clienteEntity != null) {
+                    minimercado.getClientes().remove(clienteEntity);
+                }
                 
                 // Recargar tabla
                 cargarClientes();
