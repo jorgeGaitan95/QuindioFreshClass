@@ -1,8 +1,9 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
-import co.edu.uniquindio.SOLID.model.*;
-import co.edu.uniquindio.SOLID.model.DTO.*;
-import co.edu.uniquindio.SOLID.Service.Fachadas.MinimercadoFacade;
+import co.edu.uniquindio.SOLID.Model.*;
+import co.edu.uniquindio.SOLID.Model.Pedido.ItemPedido;
+import co.edu.uniquindio.SOLID.Model.Pedido.Pedido;
+import co.edu.uniquindio.SOLID.utils.JFXPaths;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -19,16 +20,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador simplificado que usa directamente las entidades del modelo
+ */
 public class PedidoController implements Initializable {
 
-    @FXML private ComboBox<ClienteDTO> cmbClientes;
-    @FXML private ComboBox<ProductoDTO> cmbProductos;
+    @FXML private ComboBox<Cliente> cmbClientes;
+    @FXML private ComboBox<Producto> cmbProductos;
     @FXML private Spinner<Integer> spnCantidad;
-    @FXML private TableView<ItemPedidoDTO> tblItemsPedido;
-    @FXML private TableColumn<ItemPedidoDTO, String> colProducto;
-    @FXML private TableColumn<ItemPedidoDTO, Integer> colCantidad;
-    @FXML private TableColumn<ItemPedidoDTO, Double> colPrecio;
-    @FXML private TableColumn<ItemPedidoDTO, Double> colSubtotal;
+    @FXML private TableView<ItemPedido> tblItemsPedido;
+    @FXML private TableColumn<ItemPedido, String> colProducto;
+    @FXML private TableColumn<ItemPedido, Integer> colCantidad;
+    @FXML private TableColumn<ItemPedido, Double> colPrecio;
+    @FXML private TableColumn<ItemPedido, Double> colSubtotal;
     @FXML private TextField txtDireccionEnvio;
     @FXML private TextArea txtNotas;
     @FXML private TextField txtCodigoDescuento;
@@ -40,62 +44,37 @@ public class PedidoController implements Initializable {
     @FXML private Label lblTotal;
     @FXML private TextArea txtResultado;
 
-    private MinimercadoFacade minimercadoFacade;
-    private ObservableList<ItemPedidoDTO> itemsPedido;
+    private Minimercado minimercado;
+    private ObservableList<ItemPedido> itemsPedido;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        minimercadoFacade = new MinimercadoFacade();
+        minimercado = Minimercado.getInstancia();
         itemsPedido = FXCollections.observableArrayList();
         
-        // Configurar tabla
         configurarTabla();
-        
-        // Cargar datos
         cargarClientes();
         cargarProductos();
+        configurarComboBoxes();
+        configurarSpinner();
         
-        // Configurar spinner
-        if (spnCantidad != null) {
-            spnCantidad.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
-        }
-        
-        // Configurar combos
-        if (cmbMetodoPago != null) {
-            cmbMetodoPago.setItems(FXCollections.observableArrayList("TARJETA", "PSE"));
-            cmbMetodoPago.setValue("TARJETA");
-        }
-        
-        if (cmbTipoEnvio != null) {
-            cmbTipoEnvio.setItems(FXCollections.observableArrayList("ESTANDAR", "EXPRESS"));
-            cmbTipoEnvio.setValue("ESTANDAR");
-            cmbTipoEnvio.setOnAction(e -> actualizarTotales());
-        }
-        
-        if (cmbTipoNotificacion != null) {
-            cmbTipoNotificacion.setItems(FXCollections.observableArrayList("EMAIL", "SMS"));
-            cmbTipoNotificacion.setValue("EMAIL");
-        }
-        
-        actualizarTotales();
         System.out.println("PedidoController inicializado correctamente");
     }
 
     private void configurarTabla() {
         if (tblItemsPedido != null) {
             colProducto.setCellValueFactory(cellData -> 
-                new javafx.beans.property.SimpleStringProperty(cellData.getValue().skuProducto));
+                new javafx.beans.property.SimpleStringProperty(
+                    cellData.getValue().getProducto().getNombre()));
             colCantidad.setCellValueFactory(cellData -> 
-                new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().cantidad).asObject());
-            colPrecio.setCellValueFactory(cellData -> {
-                ProductoDTO p = buscarProductoPorSku(cellData.getValue().skuProducto);
-                return new javafx.beans.property.SimpleDoubleProperty(p != null ? p.getPrecio() : 0).asObject();
-            });
-            colSubtotal.setCellValueFactory(cellData -> {
-                ProductoDTO p = buscarProductoPorSku(cellData.getValue().skuProducto);
-                double subtotal = p != null ? p.getPrecio() * cellData.getValue().cantidad : 0;
-                return new javafx.beans.property.SimpleDoubleProperty(subtotal).asObject();
-            });
+                new javafx.beans.property.SimpleIntegerProperty(
+                    cellData.getValue().getCantidad()).asObject());
+            colPrecio.setCellValueFactory(cellData -> 
+                new javafx.beans.property.SimpleDoubleProperty(
+                    cellData.getValue().getProducto().getPrecio()).asObject());
+            colSubtotal.setCellValueFactory(cellData -> 
+                new javafx.beans.property.SimpleDoubleProperty(
+                    cellData.getValue().calcularSubtotal()).asObject());
             
             tblItemsPedido.setItems(itemsPedido);
         }
@@ -103,30 +82,29 @@ public class PedidoController implements Initializable {
 
     private void cargarClientes() {
         if (cmbClientes != null) {
-            List<ClienteDTO> clientesDTO = minimercadoFacade.obtenerTodosLosClientes();
-            cmbClientes.setItems(FXCollections.observableArrayList(clientesDTO));
+            List<Cliente> clientes = minimercado.getClientes();
+            cmbClientes.setItems(FXCollections.observableArrayList(clientes));
             
-            // Configurar cómo se muestra el cliente
-            cmbClientes.setButtonCell(new ListCell<ClienteDTO>() {
+            cmbClientes.setButtonCell(new ListCell<Cliente>() {
                 @Override
-                protected void updateItem(ClienteDTO item, boolean empty) {
+                protected void updateItem(Cliente item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || item == null) {
                         setText(null);
                     } else {
-                        setText(item.toString());
+                        setText(item.getNombre() + " (" + item.getCedula() + ")");
                     }
                 }
             });
-            
-            cmbClientes.setCellFactory(param -> new ListCell<ClienteDTO>() {
+
+            cmbClientes.setCellFactory(param -> new ListCell<Cliente>() {
                 @Override
-                protected void updateItem(ClienteDTO item, boolean empty) {
+                protected void updateItem(Cliente item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || item == null) {
                         setText(null);
                     } else {
-                        setText(item.toString());
+                        setText(item.getNombre() + " (" + item.getCedula() + ")");
                     }
                 }
             });
@@ -135,42 +113,64 @@ public class PedidoController implements Initializable {
 
     private void cargarProductos() {
         if (cmbProductos != null) {
-            List<ProductoDTO> productosDTO = minimercadoFacade.obtenerTodosLosProductos();
-            cmbProductos.setItems(FXCollections.observableArrayList(productosDTO));
+            List<Producto> productos = minimercado.getProductos();
+            cmbProductos.setItems(FXCollections.observableArrayList(productos));
             
-            // Configurar cómo se muestra el producto
-            cmbProductos.setButtonCell(new ListCell<ProductoDTO>() {
+            cmbProductos.setButtonCell(new ListCell<Producto>() {
                 @Override
-                protected void updateItem(ProductoDTO item, boolean empty) {
+                protected void updateItem(Producto item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || item == null) {
                         setText(null);
                     } else {
-                        setText(item.toString());
+                        setText(item.getNombre() + " - $" + item.getPrecio());
                     }
                 }
             });
-            
-            cmbProductos.setCellFactory(param -> new ListCell<ProductoDTO>() {
+
+            cmbProductos.setCellFactory(param -> new ListCell<Producto>() {
                 @Override
-                protected void updateItem(ProductoDTO item, boolean empty) {
+                protected void updateItem(Producto item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || item == null) {
                         setText(null);
                     } else {
-                        setText(item.toString());
+                        setText(item.getNombre() + " - $" + item.getPrecio());
                     }
                 }
             });
         }
     }
 
+    private void configurarComboBoxes() {
+        if (cmbMetodoPago != null) {
+            cmbMetodoPago.setItems(FXCollections.observableArrayList("PSE", "TARJETA_CREDITO"));
+            cmbMetodoPago.setValue("PSE");
+        }
+        
+        if (cmbTipoEnvio != null) {
+            cmbTipoEnvio.setItems(FXCollections.observableArrayList("ESTANDAR", "EXPRESS"));
+            cmbTipoEnvio.setValue("ESTANDAR");
+        }
+        
+        if (cmbTipoNotificacion != null) {
+            cmbTipoNotificacion.setItems(FXCollections.observableArrayList("EMAIL", "SMS"));
+            cmbTipoNotificacion.setValue("EMAIL");
+        }
+    }
+
+    private void configurarSpinner() {
+        if (spnCantidad != null) {
+            spnCantidad.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
+        }
+    }
+
     @FXML
     void agregarItem(ActionEvent event) {
-        ProductoDTO productoDTO = cmbProductos.getValue();
+        Producto producto = cmbProductos.getValue();
         Integer cantidad = spnCantidad.getValue();
 
-        if (productoDTO == null) {
+        if (producto == null) {
             mostrarError("Seleccione un producto");
             return;
         }
@@ -180,22 +180,22 @@ public class PedidoController implements Initializable {
             return;
         }
 
-        ItemPedidoDTO item = new ItemPedidoDTO(productoDTO.getSku(), cantidad);
+        ItemPedido item = new ItemPedido(producto, cantidad);
         itemsPedido.add(item);
-        
+
         actualizarTotales();
-        System.out.println("Item agregado: " + productoDTO.getNombre() + " x" + cantidad);
+        System.out.println("Item agregado: " + producto.getNombre() + " x" + cantidad);
     }
 
     @FXML
     void eliminarItem(ActionEvent event) {
-        ItemPedidoDTO itemSeleccionado = tblItemsPedido.getSelectionModel().getSelectedItem();
+        ItemPedido itemSeleccionado = tblItemsPedido.getSelectionModel().getSelectedItem();
         if (itemSeleccionado != null) {
             itemsPedido.remove(itemSeleccionado);
             actualizarTotales();
-            System.out.println("Item eliminado");
+            System.out.println("Item eliminado: " + itemSeleccionado.getProducto().getNombre());
         } else {
-            mostrarError("Seleccione un item para eliminar");
+            mostrarError("Seleccione un item de la tabla para eliminar");
         }
     }
 
@@ -218,37 +218,36 @@ public class PedidoController implements Initializable {
                 return;
             }
 
-            // Crear DTO del pedido
-            PedidoDTO pedidoDTO = new PedidoDTO();
-            pedidoDTO.codigo = "PED-" + System.currentTimeMillis();
-            pedidoDTO.idCliente = cmbClientes.getValue().getCedula();
-            pedidoDTO.itemsPedido = new ArrayList<>(itemsPedido);
-            pedidoDTO.direccionEnvio = txtDireccionEnvio.getText();
-            pedidoDTO.notas = txtNotas.getText();
-            pedidoDTO.codigoDescuento = txtCodigoDescuento.getText();
+            // Obtener datos del formulario
+            Cliente cliente = cmbClientes.getValue();
+            List<ItemPedido> items = new ArrayList<>(itemsPedido);
+            String direccionEnvio = txtDireccionEnvio.getText();
+            String notas = txtNotas.getText();
+            String codigoDescuento = txtCodigoDescuento.getText();
+            String tipoEnvio = cmbTipoEnvio.getValue();
+            String metodoPago = cmbMetodoPago.getValue();
+            String tipoNotificacion = cmbTipoNotificacion.getValue();
             
-            // Procesar pedido usando el Facade
-            ResumenPedidoDTO resultado = minimercadoFacade.procesarPedido(pedidoDTO);
-            
-            // Calcular totales
-            double subtotal = calcularSubtotal();
-            double costoEnvio = calcularCostoEnvio();
-            double total = minimercadoFacade.calcularTotal(subtotal, costoEnvio);
+            // Procesar pedido usando Minimercado (que usa los patrones Factory)
+            Pedido pedido = minimercado.procesarPedido(
+                cliente, items, direccionEnvio, notas, codigoDescuento,
+                tipoEnvio, metodoPago, tipoNotificacion
+            );
             
             // Mostrar resultado
             txtResultado.setText(
                 "✅ PEDIDO PROCESADO EXITOSAMENTE\n\n" +
-                "Código: " + resultado.codigo + "\n" +
-                "Cliente: " + cmbClientes.getValue().getNombre() + "\n" +
-                "Items: " + itemsPedido.size() + "\n" +
-                "Subtotal: $" + String.format("%.2f", subtotal) + "\n" +
-                "Envío " + cmbTipoEnvio.getValue() + ": $" + String.format("%.2f", costoEnvio) + "\n" +
-                "Total: $" + String.format("%.2f", total) + "\n" +
-                "Método de pago: " + cmbMetodoPago.getValue() + "\n" +
-                "Notificación enviada por: " + cmbTipoNotificacion.getValue()
+                "Código: " + pedido.getCodigo() + "\n" +
+                "Cliente: " + cliente.getNombre() + "\n" +
+                "Items: " + pedido.getItems().size() + "\n" +
+                "Subtotal: $" + String.format("%.2f", pedido.calcularSubtotal()) + "\n" +
+                "Envío " + tipoEnvio + ": $" + String.format("%.2f", pedido.calcularCostoEnvio()) + "\n" +
+                "Total: $" + String.format("%.2f", pedido.calcularTotal()) + "\n" +
+                "Método de pago: " + metodoPago + "\n" +
+                "Notificación enviada por: " + tipoNotificacion
             );
             
-            System.out.println("Pedido procesado exitosamente: " + resultado.codigo);
+            System.out.println("Pedido procesado exitosamente: " + pedido.getCodigo());
             
             // Limpiar formulario después de procesar
             limpiarFormulario(event);
@@ -268,9 +267,11 @@ public class PedidoController implements Initializable {
         if (txtDireccionEnvio != null) txtDireccionEnvio.clear();
         if (txtNotas != null) txtNotas.clear();
         if (txtCodigoDescuento != null) txtCodigoDescuento.clear();
-        if (cmbMetodoPago != null) cmbMetodoPago.setValue("TARJETA");
+        if (cmbMetodoPago != null) cmbMetodoPago.setValue("PSE");
         if (cmbTipoEnvio != null) cmbTipoEnvio.setValue("ESTANDAR");
         if (cmbTipoNotificacion != null) cmbTipoNotificacion.setValue("EMAIL");
+        if (txtResultado != null) txtResultado.clear();
+        
         actualizarTotales();
         System.out.println("Formulario limpiado");
     }
@@ -279,15 +280,13 @@ public class PedidoController implements Initializable {
     void gestionarClientes(ActionEvent event) {
         try {
             System.out.println("Navegando a gestión de clientes");
-            
-            // Cargar ClienteView
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clienteView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(JFXPaths.CLIENTE_VIEW));
             Parent root = loader.load();
-            Stage clienteStage = new Stage();
-            clienteStage.setTitle("Sistema Quindío Fresh - Gestión de Clientes");
-            clienteStage.setScene(new Scene(root, 800, 600));
             
-            // Agregar listener para recargar clientes cuando se cierre la ventana
+            Stage clienteStage = new Stage();
+            clienteStage.setTitle("Gestión de Clientes");
+            clienteStage.setScene(new Scene(root));
+            
             clienteStage.setOnHidden(e -> {
                 cargarClientes();
                 System.out.println("Clientes recargados después de cerrar ventana");
@@ -305,15 +304,13 @@ public class PedidoController implements Initializable {
     void gestionarProductos(ActionEvent event) {
         try {
             System.out.println("Navegando a gestión de productos");
-            
-            // Cargar ProductoView
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/productoView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(JFXPaths.PRODUCTO_VIEW));
             Parent root = loader.load();
-            Stage productoStage = new Stage();
-            productoStage.setTitle("Sistema Quindío Fresh - Gestión de Productos");
-            productoStage.setScene(new Scene(root, 800, 600));
             
-            // Agregar listener para recargar productos cuando se cierre la ventana
+            Stage productoStage = new Stage();
+            productoStage.setTitle("Gestión de Productos");
+            productoStage.setScene(new Scene(root));
+            
             productoStage.setOnHidden(e -> {
                 cargarProductos();
                 System.out.println("Productos recargados después de cerrar ventana");
@@ -328,39 +325,31 @@ public class PedidoController implements Initializable {
     }
 
     private void actualizarTotales() {
-        double subtotal = calcularSubtotal();
+        double subtotal = 0;
+        for (ItemPedido item : itemsPedido) {
+            subtotal += item.calcularSubtotal();
+        }
+        
         double costoEnvio = calcularCostoEnvio();
-        double total = minimercadoFacade.calcularTotal(subtotal, costoEnvio);
+        double total = subtotal + costoEnvio;
 
         if (lblSubtotal != null) lblSubtotal.setText(String.format("$%.2f", subtotal));
         if (lblCostoEnvio != null) lblCostoEnvio.setText(String.format("$%.2f", costoEnvio));
         if (lblTotal != null) lblTotal.setText(String.format("$%.2f", total));
     }
 
-    private double calcularSubtotal() {
-        return minimercadoFacade.calcularSubtotal(itemsPedido);
-    }
-
     private double calcularCostoEnvio() {
         String tipoEnvio = cmbTipoEnvio != null ? cmbTipoEnvio.getValue() : "ESTANDAR";
-        return minimercadoFacade.calcularCostoEnvio(tipoEnvio);
-    }
-
-    private ProductoDTO buscarProductoPorSku(String sku) {
-        return minimercadoFacade.buscarProductoPorSku(sku);
+        if (tipoEnvio != null && tipoEnvio.equals("EXPRESS")) {
+            return 15000;
+        } else {
+            return 7000; // ESTANDAR
+        }
     }
 
     private void mostrarError(String mensaje) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
-    }
-
-    private void mostrarInfo(String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Información");
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.showAndWait();

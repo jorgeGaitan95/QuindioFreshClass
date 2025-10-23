@@ -1,7 +1,5 @@
 package co.edu.uniquindio.SOLID;
 
-import co.edu.uniquindio.SOLID.model.DTO.ItemPedidoDTO;
-import co.edu.uniquindio.SOLID.model.DTO.PedidoDTO;
 import co.edu.uniquindio.SOLID.utils.AppSetup;
 import co.edu.uniquindio.SOLID.utils.JFXPaths;
 import javafx.application.Application;
@@ -9,9 +7,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class App extends Application {
 

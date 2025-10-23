@@ -1,4 +1,6 @@
-package co.edu.uniquindio.SOLID.model;
+package co.edu.uniquindio.SOLID.Model.Pedido;
+
+import co.edu.uniquindio.SOLID.Model.Cliente;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

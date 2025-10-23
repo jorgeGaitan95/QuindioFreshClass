@@ -1,7 +1,7 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
-import co.edu.uniquindio.SOLID.model.DTO.ProductoDTO;
-import co.edu.uniquindio.SOLID.Service.Fachadas.MinimercadoFacade;
+import co.edu.uniquindio.SOLID.Model.Producto;
+import co.edu.uniquindio.SOLID.Model.Minimercado;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -16,29 +16,24 @@ import java.util.ResourceBundle;
 
 public class ProductoController implements Initializable {
 
-    @FXML private TableView<ProductoDTO> tblProductos;
-    @FXML private TableColumn<ProductoDTO, String> colSku;
-    @FXML private TableColumn<ProductoDTO, String> colNombre;
-    @FXML private TableColumn<ProductoDTO, Double> colPrecio;
+    @FXML private TableView<Producto> tblProductos;
+    @FXML private TableColumn<Producto, String> colSku;
+    @FXML private TableColumn<Producto, String> colNombre;
+    @FXML private TableColumn<Producto, Double> colPrecio;
     
     @FXML private TextField txtSku;
     @FXML private TextField txtNombre;
     @FXML private TextField txtPrecio;
     
-    @FXML private Button btnAgregar;
-    @FXML private Button btnActualizar;
-    @FXML private Button btnEliminar;
-    @FXML private Button btnLimpiar;
-    
     @FXML private Label lblMensaje;
 
-    private MinimercadoFacade minimercadoFacade;
-    private ObservableList<ProductoDTO> productos;
-    private ProductoDTO productoSeleccionado;
+    private Minimercado minimercado;
+    private ObservableList<Producto> productos;
+    private Producto productoSeleccionado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        minimercadoFacade = new MinimercadoFacade();
+        minimercado = Minimercado.getInstancia();
         productos = FXCollections.observableArrayList();
         
         configurarTabla();
@@ -70,11 +65,11 @@ public class ProductoController implements Initializable {
 
     private void cargarProductos() {
         productos.clear();
-        productos.addAll(minimercadoFacade.obtenerTodosLosProductos());
+        productos.addAll(minimercado.getProductos());
         mostrarMensaje("Productos cargados: " + productos.size(), false);
     }
 
-    private void cargarDatosEnFormulario(ProductoDTO producto) {
+    private void cargarDatosEnFormulario(Producto producto) {
         txtSku.setText(producto.getSku());
         txtSku.setDisable(true);
         txtNombre.setText(producto.getNombre());
@@ -88,20 +83,16 @@ public class ProductoController implements Initializable {
                 return;
             }
             
-            ProductoDTO nuevoProducto = new ProductoDTO(
+            Producto nuevoProducto = new Producto(
                 txtSku.getText().trim(),
                 txtNombre.getText().trim(),
                 Double.parseDouble(txtPrecio.getText().trim())
             );
             
-            if (minimercadoFacade.agregarProducto(nuevoProducto)) {
-                cargarProductos();
-                limpiarFormulario(null);
-                mostrarMensaje("Producto agregado exitosamente", false);
-                System.out.println("Producto agregado: " + nuevoProducto.getSku());
-            } else {
-                mostrarMensaje("Error: Ya existe un producto con el SKU " + nuevoProducto.getSku(), true);
-            }
+            minimercado.agregarProducto(nuevoProducto);
+            cargarProductos();
+            limpiarFormulario(null);
+            mostrarMensaje("Producto agregado exitosamente", false);
             
         } catch (NumberFormatException e) {
             mostrarMensaje("Error: El precio debe ser un número válido", true);
@@ -123,13 +114,15 @@ public class ProductoController implements Initializable {
                 return;
             }
             
-            productoSeleccionado.setNombre(txtNombre.getText().trim());
-            productoSeleccionado.setPrecio(Double.parseDouble(txtPrecio.getText().trim()));
+            boolean actualizado = minimercado.actualizarProducto(
+                productoSeleccionado.getSku(),
+                txtNombre.getText().trim(),
+                Double.parseDouble(txtPrecio.getText().trim())
+            );
             
-            if (minimercadoFacade.actualizarProducto(productoSeleccionado)) {
+            if (actualizado) {
                 tblProductos.refresh();
                 mostrarMensaje("Producto actualizado exitosamente", false);
-                System.out.println("Producto actualizado: " + productoSeleccionado.getSku());
                 limpiarFormulario(null);
             } else {
                 mostrarMensaje("Error: No se pudo actualizar el producto", true);
@@ -161,11 +154,11 @@ public class ProductoController implements Initializable {
             Optional<ButtonType> resultado = confirmacion.showAndWait();
             
             if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
-                if (minimercadoFacade.eliminarProducto(productoSeleccionado.getSku())) {
+                boolean eliminado = minimercado.eliminarProducto(productoSeleccionado.getSku());
+                if (eliminado) {
                     cargarProductos();
                     limpiarFormulario(null);
                     mostrarMensaje("Producto eliminado exitosamente", false);
-                    System.out.println("Producto eliminado: " + productoSeleccionado.getSku());
                 } else {
                     mostrarMensaje("Error: No se pudo eliminar el producto", true);
                 }

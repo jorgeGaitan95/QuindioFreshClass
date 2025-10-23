@@ -1,7 +1,7 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
-import co.edu.uniquindio.SOLID.model.DTO.ClienteDTO;
-import co.edu.uniquindio.SOLID.Service.Fachadas.MinimercadoFacade;
+import co.edu.uniquindio.SOLID.Model.Cliente;
+import co.edu.uniquindio.SOLID.Model.Minimercado;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -16,31 +16,26 @@ import java.util.ResourceBundle;
 
 public class ClienteController implements Initializable {
 
-    @FXML private TableView<ClienteDTO> tblClientes;
-    @FXML private TableColumn<ClienteDTO, String> colCedula;
-    @FXML private TableColumn<ClienteDTO, String> colNombre;
-    @FXML private TableColumn<ClienteDTO, String> colCorreo;
-    @FXML private TableColumn<ClienteDTO, String> colTelefono;
+    @FXML private TableView<Cliente> tblClientes;
+    @FXML private TableColumn<Cliente, String> colCedula;
+    @FXML private TableColumn<Cliente, String> colNombre;
+    @FXML private TableColumn<Cliente, String> colCorreo;
+    @FXML private TableColumn<Cliente, String> colTelefono;
     
     @FXML private TextField txtCedula;
     @FXML private TextField txtNombre;
     @FXML private TextField txtCorreo;
     @FXML private TextField txtTelefono;
     
-    @FXML private Button btnAgregar;
-    @FXML private Button btnActualizar;
-    @FXML private Button btnEliminar;
-    @FXML private Button btnLimpiar;
-    
     @FXML private Label lblMensaje;
 
-    private MinimercadoFacade minimercadoFacade;
-    private ObservableList<ClienteDTO> clientes;
-    private ClienteDTO clienteSeleccionado;
+    private Minimercado minimercado;
+    private ObservableList<Cliente> clientes;
+    private Cliente clienteSeleccionado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        minimercadoFacade = new MinimercadoFacade();
+        minimercado = Minimercado.getInstancia();
         clientes = FXCollections.observableArrayList();
         
         configurarTabla();
@@ -74,11 +69,11 @@ public class ClienteController implements Initializable {
 
     private void cargarClientes() {
         clientes.clear();
-        clientes.addAll(minimercadoFacade.obtenerTodosLosClientes());
+        clientes.addAll(minimercado.getClientes());
         mostrarMensaje("Clientes cargados: " + clientes.size(), false);
     }
 
-    private void cargarDatosEnFormulario(ClienteDTO cliente) {
+    private void cargarDatosEnFormulario(Cliente cliente) {
         txtCedula.setText(cliente.getCedula());
         txtCedula.setDisable(true);
         txtNombre.setText(cliente.getNombre());
@@ -93,21 +88,17 @@ public class ClienteController implements Initializable {
                 return;
             }
             
-            ClienteDTO nuevoCliente = new ClienteDTO(
-                txtCedula.getText().trim(),
+            Cliente nuevoCliente = new Cliente(
                 txtNombre.getText().trim(),
+                txtCedula.getText().trim(),
                 txtCorreo.getText().trim(),
                 txtTelefono.getText().trim()
             );
             
-            if (minimercadoFacade.agregarCliente(nuevoCliente)) {
-                cargarClientes();
-                limpiarFormulario(null);
-                mostrarMensaje("Cliente agregado exitosamente", false);
-                System.out.println("Cliente agregado: " + nuevoCliente.getCedula());
-            } else {
-                mostrarMensaje("Error: Ya existe un cliente con la cédula " + nuevoCliente.getCedula(), true);
-            }
+            minimercado.agregarCliente(nuevoCliente);
+            cargarClientes();
+            limpiarFormulario(null);
+            mostrarMensaje("Cliente agregado exitosamente", false);
             
         } catch (Exception e) {
             mostrarMensaje("Error al agregar cliente: " + e.getMessage(), true);
@@ -127,14 +118,16 @@ public class ClienteController implements Initializable {
                 return;
             }
             
-            clienteSeleccionado.setNombre(txtNombre.getText().trim());
-            clienteSeleccionado.setCorreo(txtCorreo.getText().trim());
-            clienteSeleccionado.setTelefono(txtTelefono.getText().trim());
+            boolean actualizado = minimercado.actualizarCliente(
+                clienteSeleccionado.getCedula(),
+                txtNombre.getText().trim(),
+                txtCorreo.getText().trim(),
+                txtTelefono.getText().trim()
+            );
             
-            if (minimercadoFacade.actualizarCliente(clienteSeleccionado)) {
+            if (actualizado) {
                 tblClientes.refresh();
                 mostrarMensaje("Cliente actualizado exitosamente", false);
-                System.out.println("Cliente actualizado: " + clienteSeleccionado.getCedula());
                 limpiarFormulario(null);
             } else {
                 mostrarMensaje("Error: No se pudo actualizar el cliente", true);
@@ -163,11 +156,11 @@ public class ClienteController implements Initializable {
             Optional<ButtonType> resultado = confirmacion.showAndWait();
             
             if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
-                if (minimercadoFacade.eliminarCliente(clienteSeleccionado.getCedula())) {
+                boolean eliminado = minimercado.eliminarCliente(clienteSeleccionado.getCedula());
+                if (eliminado) {
                     cargarClientes();
                     limpiarFormulario(null);
                     mostrarMensaje("Cliente eliminado exitosamente", false);
-                    System.out.println("Cliente eliminado: " + clienteSeleccionado.getCedula());
                 } else {
                     mostrarMensaje("Error: No se pudo eliminar el cliente", true);
                 }

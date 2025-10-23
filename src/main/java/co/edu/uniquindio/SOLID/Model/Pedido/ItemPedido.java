@@ -1,4 +1,6 @@
-package co.edu.uniquindio.SOLID.model;
+package co.edu.uniquindio.SOLID.Model.Pedido;
+
+import co.edu.uniquindio.SOLID.Model.Producto;
 
 public class ItemPedido {
     private Producto producto;
@@ -21,9 +23,12 @@ public class ItemPedido {
         return cantidad;
     }
 
+    public double calcularSubtotal() {
+        return producto.getPrecio() * cantidad;
+    }
+
     @Override
     public String toString() {
-        return producto.getSku() + " x" + cantidad;
+        return producto.getNombre() + " x" + cantidad + " = $" + String.format("%.2f", calcularSubtotal());
     }
 }
-
