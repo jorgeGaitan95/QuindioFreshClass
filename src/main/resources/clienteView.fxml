@@ -5,31 +5,79 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="co.edu.uniquindio.SOLID.Controlador.ClienteController">
+   <top>
+      <VBox spacing="10.0">
+         <children>
+            <Label text="Gestión de Clientes" />
+            <Label text="Sistema Quindío Fresh" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+         </padding>
+      </VBox>
+   </top>
+   
    <center>
       <VBox spacing="15.0">
          <children>
-            <!-- Título -->
-            <Label text="Gestión de Clientes" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
-            
-            <!-- Tabla -->
-            <TableView fx:id="tblClientes" prefHeight="400.0">
-               <columns>
-                  <TableColumn fx:id="colCedula" prefWidth="120.0" text="Cédula" />
-                  <TableColumn fx:id="colNombre" prefWidth="200.0" text="Nombre" />
-                  <TableColumn fx:id="colCorreo" prefWidth="200.0" text="Correo" />
-                  <TableColumn fx:id="colTelefono" prefWidth="150.0" text="Teléfono" />
-               </columns>
-            </TableView>
-            
-            <!-- Botón Volver -->
-            <HBox alignment="CENTER">
+            <!-- Formulario de Cliente -->
+            <VBox spacing="10.0">
                <children>
+                  <Label text="Datos del Cliente" />
+                  
+                  <GridPane hgap="10.0" vgap="10.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="300.0" />
+                     </columnConstraints>
+                     
+                     <Label text="Cédula:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                     <TextField fx:id="txtCedula" promptText="Ingrese cédula" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                     
+                     <Label text="Nombre:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                     <TextField fx:id="txtNombre" promptText="Ingrese nombre completo" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                     
+                     <Label text="Correo:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                     <TextField fx:id="txtCorreo" promptText="ejemplo@correo.com" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                     
+                     <Label text="Teléfono:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                     <TextField fx:id="txtTelefono" promptText="3001234567" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  </GridPane>
+                  
+                  <!-- Botones de Acción -->
+                  <HBox spacing="10.0" alignment="CENTER">
+                     <children>
+                        <Button fx:id="btnAgregar" onAction="#agregarCliente" text="Agregar" prefWidth="100.0" />
+                        <Button fx:id="btnActualizar" onAction="#actualizarCliente" text="Actualizar" prefWidth="100.0" />
+                        <Button fx:id="btnEliminar" onAction="#eliminarCliente" text="Eliminar" prefWidth="100.0" />
+                        <Button fx:id="btnLimpiar" onAction="#limpiarFormulario" text="Limpiar" prefWidth="100.0" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            
+            <!-- Tabla de Clientes -->
+            <VBox spacing="10.0">
+               <children>
+                  <Label text="Lista de Clientes" />
+                  <TableView fx:id="tblClientes" prefHeight="300.0">
+                     <columns>
+                        <TableColumn fx:id="colCedula" prefWidth="120.0" text="Cédula" />
+                        <TableColumn fx:id="colNombre" prefWidth="200.0" text="Nombre" />
+                        <TableColumn fx:id="colCorreo" prefWidth="200.0" text="Correo" />
+                        <TableColumn fx:id="colTelefono" prefWidth="150.0" text="Teléfono" />
+                     </columns>
+                  </TableView>
+               </children>
+            </VBox>
+            
+            <!-- Mensaje y Botón Volver -->
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+               <children>
+                  <Label fx:id="lblMensaje" text="Listo para gestionar clientes" HBox.hgrow="ALWAYS" />
                   <Button onAction="#volverAPedidos" text="Volver a Pedidos" prefWidth="150.0" />
                </children>
             </HBox>
-            
-            <!-- Mensaje -->
-            <Label fx:id="lblMensaje" text="Clientes cargados" />
          </children>
          <padding>
             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />

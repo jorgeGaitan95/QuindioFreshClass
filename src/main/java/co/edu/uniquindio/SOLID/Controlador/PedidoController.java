@@ -288,6 +288,13 @@ public class PedidoController implements Initializable {
             Stage clienteStage = new Stage();
             clienteStage.setTitle("Sistema Quindío Fresh - Gestión de Clientes");
             clienteStage.setScene(new Scene(root, 800, 600));
+            
+            // Agregar listener para recargar clientes cuando se cierre la ventana
+            clienteStage.setOnHidden(e -> {
+                cargarClientes();
+                System.out.println("Clientes recargados después de cerrar ventana");
+            });
+            
             clienteStage.show();
             
         } catch (Exception e) {
@@ -307,6 +314,13 @@ public class PedidoController implements Initializable {
             Stage productoStage = new Stage();
             productoStage.setTitle("Sistema Quindío Fresh - Gestión de Productos");
             productoStage.setScene(new Scene(root, 800, 600));
+            
+            // Agregar listener para recargar productos cuando se cierre la ventana
+            productoStage.setOnHidden(e -> {
+                cargarProductos();
+                System.out.println("Productos recargados después de cerrar ventana");
+            });
+            
             productoStage.show();
             
         } catch (Exception e) {

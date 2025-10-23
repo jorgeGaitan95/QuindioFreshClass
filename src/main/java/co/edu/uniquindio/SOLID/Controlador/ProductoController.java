@@ -15,6 +15,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class ProductoController implements Initializable {
@@ -23,10 +24,21 @@ public class ProductoController implements Initializable {
     @FXML private TableColumn<Producto, String> colSku;
     @FXML private TableColumn<Producto, String> colNombre;
     @FXML private TableColumn<Producto, Double> colPrecio;
+    
+    @FXML private TextField txtSku;
+    @FXML private TextField txtNombre;
+    @FXML private TextField txtPrecio;
+    
+    @FXML private Button btnAgregar;
+    @FXML private Button btnActualizar;
+    @FXML private Button btnEliminar;
+    @FXML private Button btnLimpiar;
+    
     @FXML private Label lblMensaje;
 
     private Minimercado minimercado;
     private ObservableList<Producto> productos;
+    private Producto productoSeleccionado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -35,6 +47,7 @@ public class ProductoController implements Initializable {
         
         configurarTabla();
         cargarProductos();
+        configurarSeleccionTabla();
         
         System.out.println("ProductoController inicializado correctamente");
     }
@@ -47,45 +60,208 @@ public class ProductoController implements Initializable {
         tblProductos.setItems(productos);
     }
 
+    private void configurarSeleccionTabla() {
+        tblProductos.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                productoSeleccionado = newSelection;
+                cargarDatosEnFormulario(newSelection);
+            }
+        });
+    }
+
     private void cargarProductos() {
         productos.clear();
         productos.addAll(minimercado.getProductos());
-        mostrarMensaje("Productos cargados: " + productos.size());
+        mostrarMensaje("Productos cargados: " + productos.size(), false);
+    }
+
+    private void cargarDatosEnFormulario(Producto producto) {
+        txtSku.setText(producto.getSku());
+        txtSku.setDisable(true); // No se puede modificar el SKU
+        txtNombre.setText(producto.getNombre());
+        txtPrecio.setText(String.valueOf(producto.getPrecio()));
+    }
+
+    @FXML
+    void agregarProducto(ActionEvent event) {
+        try {
+            // Validar campos
+            if (!validarCampos()) {
+                return;
+            }
+            
+            String sku = txtSku.getText().trim();
+            
+            // Verificar si ya existe un producto con ese SKU
+            if (buscarProductoPorSku(sku) != null) {
+                mostrarMensaje("Error: Ya existe un producto con el SKU " + sku, true);
+                return;
+            }
+            
+            // Crear nuevo producto
+            Producto nuevoProducto = new Producto(
+                sku,
+                txtNombre.getText().trim(),
+                Double.parseDouble(txtPrecio.getText().trim())
+            );
+            
+            // Agregar al minimercado
+            minimercado.addProducto(nuevoProducto);
+            
+            // Recargar tabla
+            cargarProductos();
+            limpiarFormulario(null);
+            
+            mostrarMensaje("Producto agregado exitosamente", false);
+            System.out.println("Producto agregado: " + nuevoProducto);
+            
+        } catch (NumberFormatException e) {
+            mostrarMensaje("Error: El precio debe ser un número válido", true);
+        } catch (Exception e) {
+            mostrarMensaje("Error al agregar producto: " + e.getMessage(), true);
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void actualizarProducto(ActionEvent event) {
+        try {
+            if (productoSeleccionado == null) {
+                mostrarMensaje("Seleccione un producto de la tabla para actualizar", true);
+                return;
+            }
+            
+            if (!validarCampos()) {
+                return;
+            }
+            
+            // Actualizar datos del producto seleccionado
+            productoSeleccionado.setNombre(txtNombre.getText().trim());
+            productoSeleccionado.setPrecio(Double.parseDouble(txtPrecio.getText().trim()));
+            
+            // Refrescar tabla
+            tblProductos.refresh();
+            
+            mostrarMensaje("Producto actualizado exitosamente", false);
+            System.out.println("Producto actualizado: " + productoSeleccionado);
+            
+            limpiarFormulario(null);
+            
+        } catch (NumberFormatException e) {
+            mostrarMensaje("Error: El precio debe ser un número válido", true);
+        } catch (Exception e) {
+            mostrarMensaje("Error al actualizar producto: " + e.getMessage(), true);
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void eliminarProducto(ActionEvent event) {
+        try {
+            if (productoSeleccionado == null) {
+                mostrarMensaje("Seleccione un producto de la tabla para eliminar", true);
+                return;
+            }
+            
+            // Confirmar eliminación
+            Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmacion.setTitle("Confirmar Eliminación");
+            confirmacion.setHeaderText("¿Está seguro de eliminar este producto?");
+            confirmacion.setContentText("Producto: " + productoSeleccionado.getNombre() + 
+                                       "\nSKU: " + productoSeleccionado.getSku() +
+                                       "\nPrecio: $" + productoSeleccionado.getPrecio());
+            
+            Optional<ButtonType> resultado = confirmacion.showAndWait();
+            
+            if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
+                // Eliminar producto
+                minimercado.getProductos().remove(productoSeleccionado);
+                
+                // Recargar tabla
+                cargarProductos();
+                limpiarFormulario(null);
+                
+                mostrarMensaje("Producto eliminado exitosamente", false);
+                System.out.println("Producto eliminado: " + productoSeleccionado.getSku());
+            }
+            
+        } catch (Exception e) {
+            mostrarMensaje("Error al eliminar producto: " + e.getMessage(), true);
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void limpiarFormulario(ActionEvent event) {
+        txtSku.clear();
+        txtSku.setDisable(false);
+        txtNombre.clear();
+        txtPrecio.clear();
+        
+        productoSeleccionado = null;
+        tblProductos.getSelectionModel().clearSelection();
+        
+        mostrarMensaje("Formulario limpio - Listo para nuevo producto", false);
     }
 
     @FXML
     void volverAPedidos(ActionEvent event) {
         try {
-            // Cerrar ventana actual y volver a PedidoView
+            // Cerrar ventana actual
             Stage stage = (Stage) lblMensaje.getScene().getWindow();
             stage.close();
             
-            // Abrir PedidoView
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pedidoView.fxml"));
-            Parent root = loader.load();
-            Stage pedidoStage = new Stage();
-            pedidoStage.setTitle("Sistema Quindío Fresh - Gestión de Pedidos");
-            pedidoStage.setScene(new Scene(root, 900, 700));
-            pedidoStage.show();
+            System.out.println("Volviendo a PedidoView");
             
-            System.out.println("Navegando a PedidoView");
         } catch (Exception e) {
-            mostrarError("Error al navegar: " + e.getMessage());
+            mostrarMensaje("Error al navegar: " + e.getMessage(), true);
         }
     }
 
-    private void mostrarMensaje(String mensaje) {
+    private boolean validarCampos() {
+        if (txtSku.getText().trim().isEmpty()) {
+            mostrarMensaje("El SKU es obligatorio", true);
+            return false;
+        }
+        
+        if (txtNombre.getText().trim().isEmpty()) {
+            mostrarMensaje("El nombre es obligatorio", true);
+            return false;
+        }
+        
+        if (txtPrecio.getText().trim().isEmpty()) {
+            mostrarMensaje("El precio es obligatorio", true);
+            return false;
+        }
+        
+        // Validar que el precio sea un número válido
+        try {
+            double precio = Double.parseDouble(txtPrecio.getText().trim());
+            if (precio <= 0) {
+                mostrarMensaje("El precio debe ser mayor a 0", true);
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            mostrarMensaje("El precio debe ser un número válido", true);
+            return false;
+        }
+        
+        return true;
+    }
+
+    private Producto buscarProductoPorSku(String sku) {
+        for (Producto producto : minimercado.getProductos()) {
+            if (producto.getSku().equals(sku)) {
+                return producto;
+            }
+        }
+        return null;
+    }
+
+    private void mostrarMensaje(String mensaje, boolean esError) {
         if (lblMensaje != null) {
             lblMensaje.setText(mensaje);
         }
         System.out.println("ProductoController: " + mensaje);
-    }
-
-    private void mostrarError(String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
     }
 }

@@ -12,11 +12,15 @@ public class Cliente {
         this.correo = correo;
         this.telefono = telefono;
     }
+    
     public String getCedula() {return cedula;}
     public String getNombre() {return nombre;}
     public String getCorreo() {return correo;}
     public String getTelefono() {return telefono;}
 
+    public void setNombre(String nombre) {this.nombre = nombre;}
+    public void setCorreo(String correo) {this.correo = correo;}
+    public void setTelefono(String telefono) {this.telefono = telefono;}
 
     @Override
     public String toString() {
@@ -28,5 +32,3 @@ public class Cliente {
                 '}';
     }
 }
-
-
