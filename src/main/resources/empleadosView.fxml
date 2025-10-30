@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="co.edu.uniquindio.SOLID.Controlador.EmpleadosController" spacing="10.0">
+  <padding>
+    <Insets topRightBottomLeft="10.0" />
+  </padding>
+  <children>
+    <Label text="Gestión de Empleados" />
+    <HBox spacing="10.0">
+      <children>
+        <TextField fx:id="txtEmpId" promptText="ID" />
+        <TextField fx:id="txtEmpNombre" promptText="Nombre" />
+        <ComboBox fx:id="cmbEmpRol" prefWidth="150.0" />
+        <Button onAction="#crearEmpleado" text="Crear" />
+        <Button onAction="#actualizarEmpleado" text="Actualizar" />
+        <Button onAction="#eliminarEmpleado" text="Eliminar" />
+        <Button onAction="#activarEmpleado" text="Activar" />
+        <Button onAction="#inactivarEmpleado" text="Inactivar" />
+      </children>
+    </HBox>
+    <TableView fx:id="tblEmpleados" prefHeight="250.0">
+      <columns>
+        <TableColumn fx:id="colEmpId" text="ID" prefWidth="120.0" />
+        <TableColumn fx:id="colEmpNombre" text="Nombre" prefWidth="200.0" />
+        <TableColumn fx:id="colEmpRol" text="Rol" prefWidth="120.0" />
+        <TableColumn fx:id="colEmpEstado" text="Estado" prefWidth="120.0" />
+      </columns>
+    </TableView>
+  </children>
+</VBox>
+
+

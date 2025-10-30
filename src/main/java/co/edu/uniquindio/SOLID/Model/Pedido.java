@@ -1,10 +1,6 @@
 package co.edu.uniquindio.SOLID.Model;
 
-
-import co.edu.uniquindio.SOLID.Service.Envio.Envio;
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Pedido {

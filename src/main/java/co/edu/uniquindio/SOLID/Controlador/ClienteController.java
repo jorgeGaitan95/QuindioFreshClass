@@ -42,12 +42,9 @@ public class ClienteController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         minimercadoFacade = new MinimercadoFacade();
         clientes = FXCollections.observableArrayList();
-        
         configurarTabla();
         cargarClientes();
         configurarSeleccionTabla();
-        
-        System.out.println("ClienteController inicializado correctamente");
     }
 
     private void configurarTabla() {

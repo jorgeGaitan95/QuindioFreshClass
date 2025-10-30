@@ -76,12 +76,7 @@ public class PedidoService {
     public double calcularTotal(Pedido pedido, Envio envio) {
         return calcularSubtotal(pedido) + envio.calcularCostoEnvio();
     }
-    
-    // ========== MÉTODOS PARA FACADE ==========
-    
-    /**
-     * Procesa un pedido y retorna resumen
-     */
+   
     public ResumenPedidoDTO procesarPedido(PedidoDTO pedidoDTO) {
         Pedido pedidoCreado = crearPedido(pedidoDTO);
         

@@ -237,7 +237,7 @@ public class PedidoController implements Initializable {
             
             // Mostrar resultado
             txtResultado.setText(
-                "✅ PEDIDO PROCESADO EXITOSAMENTE\n\n" +
+                "PEDIDO PROCESADO EXITOSAMENTE\n\n" +
                 "Código: " + resultado.codigo + "\n" +
                 "Cliente: " + cmbClientes.getValue().getNombre() + "\n" +
                 "Items: " + itemsPedido.size() + "\n" +
@@ -253,8 +253,12 @@ public class PedidoController implements Initializable {
             // Limpiar formulario después de procesar
             limpiarFormulario(event);
             
+        } catch (IllegalArgumentException e) {
+            // Errores de negocio (por ejemplo, stock insuficiente)
+            mostrarError(e.getMessage());
+            txtResultado.setText("");
         } catch (Exception e) {
-            txtResultado.setText("❌ ERROR AL PROCESAR PEDIDO:\n" + e.getMessage());
+            txtResultado.setText("ERROR AL PROCESAR PEDIDO:\n" + e.getMessage());
             e.printStackTrace();
         }
     }

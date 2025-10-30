@@ -6,10 +6,14 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="co.edu.uniquindio.SOLID.Controlador.PedidoController">
    <center>
-      <ScrollPane fitToWidth="true" fitToHeight="true">
-         <content>
-            <VBox spacing="10.0">
-               <children>
+      <TabPane>
+         <tabs>
+            <Tab text="Gestión de Pedidos" closable="false">
+               <content>
+                  <ScrollPane fitToWidth="true" fitToHeight="true">
+                     <content>
+                        <VBox spacing="10.0">
+                           <children>
                   <!-- Cliente -->
                   <HBox spacing="10.0">
                      <children>
@@ -122,12 +126,28 @@
                   
                   <!-- Resultado -->
                   <TextArea fx:id="txtResultado" editable="false" prefHeight="100.0" promptText="Resultado del procesamiento" />
-               </children>
-               <padding>
-                  <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-               </padding>
-            </VBox>
-         </content>
-      </ScrollPane>
+                          </children>
+                          <padding>
+                             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                          </padding>
+                       </VBox>
+                    </content>
+                  </ScrollPane>
+               </content>
+            </Tab>
+
+            <Tab text="Gestión de Inventarios" closable="false">
+               <content>
+                  <fx:include source="/inventarioView.fxml" />
+               </content>
+            </Tab>
+
+            <Tab text="Empleados" closable="false">
+               <content>
+                  <fx:include source="/empleadosView.fxml" />
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
    </center>
 </BorderPane>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="co.edu.uniquindio.SOLID.Controlador.InventarioController" spacing="10.0">
+  <padding>
+    <Insets topRightBottomLeft="10.0" />
+  </padding>
+  <children>
+    <Label text="Registrar Entrada de Inventario" />
+    <HBox spacing="10.0">
+      <children>
+        <Label text="Proveedor:" minWidth="120.0" />
+        <ComboBox fx:id="cmbProveedores" prefWidth="250.0" promptText="Seleccione un proveedor" />
+        <Button onAction="#mostrarCrearProveedor" text="Nuevo Proveedor" />
+      </children>
+    </HBox>
+
+    <TitledPane text="Proveedor" expanded="false" fx:id="tpCrearProveedor">
+      <content>
+        <VBox spacing="8.0">
+          <padding>
+            <Insets topRightBottomLeft="10.0" />
+          </padding>
+          <children>
+            <TextField fx:id="txtProvNit" promptText="NIT" />
+            <TextField fx:id="txtProvNombre" promptText="Nombre" />
+            <TextField fx:id="txtProvContacto" promptText="Contacto" />
+            <TextField fx:id="txtProvEmail" promptText="Email" />
+            <TextField fx:id="txtProvTelefono" promptText="Teléfono" />
+            <HBox spacing="8.0">
+              <children>
+                <Button onAction="#crearProveedor" text="Crear" />
+                <Button onAction="#actualizarProveedor" text="Actualizar" />
+                <Button onAction="#eliminarProveedor" text="Eliminar" />
+                <Button onAction="#activarProveedor" text="Activar" />
+                <Button onAction="#inactivarProveedor" text="Inactivar" />
+              </children>
+            </HBox>
+          </children>
+        </VBox>
+      </content>
+    </TitledPane>
+
+    <HBox spacing="10.0">
+      <children>
+        <Label text="Producto:" minWidth="120.0" />
+        <ComboBox fx:id="cmbProductoEntrada" prefWidth="250.0" />
+        <Label text="Cantidad:" />
+        <Spinner fx:id="spnCantidadEntrada" prefWidth="80.0" />
+        <Button onAction="#confirmarEntradaInventario" text="Confirmar Entrada" />
+      </children>
+    </HBox>
+    <Label fx:id="lblResultadoEntrada" text="" />
+
+    <TitledPane text="Productos en Inventario" expanded="true">
+      <content>
+        <TableView fx:id="tblProductosInv" prefHeight="260.0">
+          <columns>
+            <TableColumn fx:id="colInvSku" text="SKU" prefWidth="140.0" />
+            <TableColumn fx:id="colInvNombre" text="Producto" prefWidth="260.0" />
+            <TableColumn fx:id="colInvPrecio" text="Precio" prefWidth="140.0" />
+            <TableColumn fx:id="colInvStock" text="Stock" prefWidth="120.0" />
+          </columns>
+        </TableView>
+      </content>
+    </TitledPane>
+  </children>
+</VBox>
+
+
