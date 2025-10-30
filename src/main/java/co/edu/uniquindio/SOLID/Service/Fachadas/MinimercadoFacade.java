@@ -81,7 +81,7 @@ public class MinimercadoFacade {
         return productoService.existeProducto(sku);
     }
     
-    // Pedidos - Solo delegación simple
+    // Pedidos
     public ResumenPedidoDTO procesarPedido(PedidoDTO pedidoDTO) {
         return pedidoService.procesarPedido(pedidoDTO);
     }
