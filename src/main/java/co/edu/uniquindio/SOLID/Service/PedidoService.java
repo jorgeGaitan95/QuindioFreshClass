@@ -8,6 +8,7 @@ import co.edu.uniquindio.SOLID.Service.Envio.Envio;
 import co.edu.uniquindio.SOLID.Service.Envio.EnvioExpress;
 import co.edu.uniquindio.SOLID.Service.Notificacion.Notificacion;
 import co.edu.uniquindio.SOLID.Service.Notificacion.NotificacionFactory;
+import co.edu.uniquindio.SOLID.Service.Notificacion.Decorator.NotificacionConLogging;
 import co.edu.uniquindio.SOLID.Service.Pago.MetodoPago;
 import co.edu.uniquindio.SOLID.Service.Pago.PagoFactory;
 
@@ -57,7 +58,8 @@ public class PedidoService {
         pago.procesarPago(total);
 
 
-        Notificacion notificacion = NotificacionFactory.crearNotificacion("EMAIL");
+        Notificacion notificacionBase = NotificacionFactory.crearNotificacion("SMS");
+        Notificacion notificacion = new NotificacionConLogging(notificacionBase);
         notificacion.enviar("Su pedido " + pedido.getCodigo() + " ha sido procesado exitosamente.");
 
         return pedido;
